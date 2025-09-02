@@ -1,0 +1,45 @@
+{
+    "name": "mort/automation",
+    "description": "Package de automatización para desarrollo de aplicaciones con Laravel.",
+    "keywords": [
+        "laravel",
+        "automation",
+        "package"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mort",
+            "email": "miguelmort9@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^12.0",
+        "stripe/stripe-php": "^14.0"
+    },
+    "require-dev": {
+        "pestphp/pest": "^4.0",
+        "laravel/pint": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mort\\Automation\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Mort\\Automation\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mort\\Automation\\AutomationServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
