@@ -86,7 +86,7 @@ class HelpCommand extends Command
         $this->info('🔗 Recursos Adicionales:');
         $this->line('  - Documentación: https://github.com/MiguelMort09/MortAutomation');
         $this->line('  - Issues: https://github.com/MiguelMort09/MortAutomation/issues');
-        $this->line('  - Versión actual: 1.2.1');
+        $this->line('  - Versión actual: 1.2.2');
     }
 
     private function showCommandHelp(string $command): int
