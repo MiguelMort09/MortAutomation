@@ -21,7 +21,16 @@
     },
     "require-dev": {
         "pestphp/pest": "^4.0",
-        "laravel/pint": "^1.0"
+        "laravel/pint": "^1.0",
+        "phpstan/phpstan": "^1.10",
+        "larastan/larastan": "^2.8"
+    },
+    "scripts": {
+        "test": "pest",
+        "test-coverage": "pest --coverage",
+        "check-style": "pint --test",
+        "fix-style": "pint",
+        "analyse": "phpstan analyse"
     },
     "autoload": {
         "psr-4": {

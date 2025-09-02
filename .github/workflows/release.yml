@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.4
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-suggest
+
+    - name: Run tests
+      run: composer test
+
+    - name: Create release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          ## 🚀 Nuevo Release del Package Mort Automation
+          
+          ### Características principales:
+          - ✅ 5 comandos principales implementados
+          - ✅ Service Provider configurado
+          - ✅ Configuración flexible
+          - ✅ Documentación completa
+          - ✅ Integración con MCPs
+          - ✅ Monitoreo del sistema
+          - ✅ Workflow automatizado
+          
+          ### Instalación:
+          ```bash
+          composer require mort/automation
+          php artisan vendor:publish --provider="Mort\Automation\AutomationServiceProvider" --tag="config"
+          ```
+          
+          ### Uso:
+          ```bash
+          php artisan mort:status
+          php artisan mort:dev setup
+          php artisan mort:workflow start-feature --name="mi-feature"
+          ```
+          
+          Ver [CHANGELOG.md](CHANGELOG.md) para más detalles.
+        draft: false
+        prerelease: false
