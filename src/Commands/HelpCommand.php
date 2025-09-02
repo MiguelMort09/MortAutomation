@@ -7,13 +7,13 @@ use Illuminate\Console\Command;
 class HelpCommand extends Command
 {
     protected $signature = 'mort:help 
-                            {command? : Comando específico para mostrar ayuda detallada}';
+                            {cmd? : Comando específico para mostrar ayuda detallada}';
 
     protected $description = 'Muestra ayuda y documentación para los comandos de Mort Automation';
 
     public function handle(): int
     {
-        $command = $this->argument('command');
+        $command = $this->argument('cmd');
 
         if ($command) {
             return $this->showCommandHelp($command);
@@ -86,7 +86,7 @@ class HelpCommand extends Command
         $this->info('🔗 Recursos Adicionales:');
         $this->line('  - Documentación: https://github.com/MiguelMort09/MortAutomation');
         $this->line('  - Issues: https://github.com/MiguelMort09/MortAutomation/issues');
-        $this->line('  - Versión actual: 1.1.2');
+        $this->line('  - Versión actual: 1.2.1');
     }
 
     private function showCommandHelp(string $command): int
