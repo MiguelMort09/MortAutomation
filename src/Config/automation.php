@@ -3,40 +3,153 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Configuración de Automatización Mort
+    | Mort Automation Configuration
     |--------------------------------------------------------------------------
     |
-    | Configuración para el package de automatización siguiendo la guía
-    | de desarrollo de Mort.
+    | Configuración para el package Mort Automation que incluye
+    | herramientas de desarrollo, monitoreo y automatización.
     |
     */
 
-    'stripe' => [
-        'enabled' => env('STRIPE_AUTOMATION_ENABLED', true),
-        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    'version' => '1.2.0',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración de Comandos
+    |--------------------------------------------------------------------------
+    |
+    | Configuración específica para cada tipo de comando de automatización.
+    |
+    */
+
+    'commands' => [
+        'development' => [
+            'enabled' => true,
+            'auto_install_dependencies' => true,
+            'run_tests_after_changes' => true,
+        ],
+        
+        'monitoring' => [
+            'enabled' => true,
+            'check_interval' => 300, // segundos
+            'alert_thresholds' => [
+                'cpu_usage' => 80,
+                'memory_usage' => 85,
+                'disk_usage' => 90,
+            ],
+        ],
+
+        'workflow' => [
+            'enabled' => true,
+            'auto_commit' => false,
+            'commit_message_template' => 'feat: {description}',
+        ],
     ],
 
-    'github' => [
-        'enabled' => env('GITHUB_AUTOMATION_ENABLED', true),
-        'token' => env('GITHUB_TOKEN'),
-        'default_branch' => env('GITHUB_DEFAULT_BRANCH', 'main'),
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración de MCPs
+    |--------------------------------------------------------------------------
+    |
+    | Configuración para los Model Context Protocols (MCPs) integrados.
+    |
+    */
+
+    'mcps' => [
+        'laravel_boost' => [
+            'enabled' => true,
+            'auto_configure' => true,
+        ],
+        
+        'context7' => [
+            'enabled' => true,
+            'auto_configure' => true,
+        ],
+        
+        'github' => [
+            'enabled' => true,
+            'auto_configure' => true,
+        ],
+        
+        'stripe' => [
+            'enabled' => true,
+            'auto_configure' => true,
+        ],
     ],
 
-    'monitoring' => [
-        'enabled' => env('MONITORING_ENABLED', true),
-        'slow_query_threshold' => env('SLOW_QUERY_THRESHOLD', 1000), // ms
-        'memory_limit_warning' => env('MEMORY_LIMIT_WARNING', 80), // %
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración de Logging
+    |--------------------------------------------------------------------------
+    |
+    | Configuración para el sistema de logging del package.
+    |
+    */
+
+    'logging' => [
+        'enabled' => true,
+        'level' => 'info',
+        'channels' => [
+            'automation' => 'daily',
+            'monitoring' => 'daily',
+            'errors' => 'daily',
+        ],
     ],
 
-    'workflow' => [
-        'auto_commit' => env('WORKFLOW_AUTO_COMMIT', false),
-        'default_feature_branch_prefix' => env('FEATURE_BRANCH_PREFIX', 'feature'),
-        'default_hotfix_branch_prefix' => env('HOTFIX_BRANCH_PREFIX', 'hotfix'),
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración de Notificaciones
+    |--------------------------------------------------------------------------
+    |
+    | Configuración para notificaciones del sistema de monitoreo.
+    |
+    */
+
+    'notifications' => [
+        'enabled' => true,
+        'channels' => [
+            'mail' => [
+                'enabled' => true,
+                'recipients' => [],
+            ],
+            'slack' => [
+                'enabled' => false,
+                'webhook_url' => null,
+            ],
+        ],
     ],
 
-    'development' => [
-        'auto_install_dependencies' => env('AUTO_INSTALL_DEPS', true),
-        'run_tests_after_setup' => env('RUN_TESTS_AFTER_SETUP', true),
-        'format_code_after_setup' => env('FORMAT_CODE_AFTER_SETUP', true),
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración de Cache
+    |--------------------------------------------------------------------------
+    |
+    | Configuración para el sistema de cache del package.
+    |
+    */
+
+    'cache' => [
+        'enabled' => true,
+        'ttl' => 3600, // segundos
+        'prefix' => 'mort_automation',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Configuración de Seguridad
+    |--------------------------------------------------------------------------
+    |
+    | Configuración de seguridad para el package.
+    |
+    */
+
+    'security' => [
+        'encrypt_sensitive_data' => true,
+        'log_security_events' => true,
+        'rate_limiting' => [
+            'enabled' => true,
+            'max_attempts' => 10,
+            'decay_minutes' => 1,
+        ],
     ],
 ];
