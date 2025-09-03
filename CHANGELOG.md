@@ -5,6 +5,27 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-01-27
+
+### Agregado
+- Descripciones específicas y claras para todos los comandos según la guía de Mort
+- Verificaciones de disponibilidad de NPM antes de ejecutar comandos Node.js
+- Tips útiles en comandos MCP y Stripe para mejor experiencia de usuario
+- Mejoras en el sistema de ayuda con descripciones más detalladas
+
+### Corregido
+- ExecutesCommands trait ahora es compatible con Laravel Process
+- Rutas de configuración corregidas en InitializeCommand
+- Manejo robusto de comandos NPM opcionales en todos los comandos de desarrollo
+- Compatibilidad mejorada con diferentes entornos de desarrollo
+
+### Mejorado
+- README.md con descripciones específicas de qué hace cada comando
+- HelpCommand con descripciones más detalladas y ejemplos claros
+- SystemMonitoringCommand con encabezado más claro
+- Arquitectura general siguiendo principios SOLID y Clean Code
+- Documentación siguiendo convenciones de la guía de Mort
+
 ## [1.0.0] - 2025-09-02
 
 ### Agregado
