@@ -7,6 +7,20 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 
 
+## [1.3.4] - 2025-01-27
+
+### Corregido
+- Actualización de dependencias de testing a versiones compatibles
+- Tests completamente funcionales con Pest y Orchestra Testbench
+- Limpieza de archivos temporales y optimización del proyecto
+
+### Mejorado
+- Dependencias de testing actualizadas:
+  - pestphp/pest-plugin-laravel: ^4.0
+  - orchestra/testbench: ^10.6
+- Suite de tests completa y funcional
+- Autoloading optimizado
+
 ## [1.3.3] - 2025-01-27
 
 ### Corregido
