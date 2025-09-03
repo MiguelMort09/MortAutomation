@@ -7,6 +7,12 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 
 
+## [1.3.3] - 2025-01-27
+
+### Corregido
+- Carácter extraño al inicio de InitializeCommand.php que causaba error de namespace
+- Problemas de PSR-4 autoloading en archivos PHP
+
 ## [1.3.2] - 2025-01-27
 
 ### Corregido
