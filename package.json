@@ -1,6 +1,6 @@
 {
   "name": "mort/automation",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Laravel package for Mort's development automation commands",
   "main": "index.js",
   "scripts": {

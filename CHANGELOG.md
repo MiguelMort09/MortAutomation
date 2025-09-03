@@ -7,6 +7,18 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 
 
+## [1.3.5] - 2025-01-27
+
+### Corregido
+- Error de cache de Pest que causaba fallos en GitHub Actions
+- Configuración de Pest actualizada con directorio de cache correcto
+- Directorio .pest agregado al .gitignore
+
+### Mejorado
+- Configuración de Pest optimizada
+- Tests funcionando correctamente sin errores de cache
+- Estabilidad mejorada en entornos de CI/CD
+
 ## [1.3.4] - 2025-01-27
 
 ### Corregido
