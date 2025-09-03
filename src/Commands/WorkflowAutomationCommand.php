@@ -77,7 +77,10 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Configurar entorno para desarrollo
             $this->info('⚙️  Configurando entorno de desarrollo...');
             $this->executeCommand('composer install');
-            $this->executeCommand('npm install');
+            
+            if ($this->commandExists('npm')) {
+                $this->executeCommand('npm install');
+            }
 
             // Limpiar cache
             $this->executeCommand('php artisan config:clear');
@@ -133,7 +136,10 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Formatear código
             $this->info('🎨 Formateando código...');
             $this->executeCommand('vendor/bin/pint');
-            $this->executeCommand('npm run format');
+            
+            if ($this->commandExists('npm')) {
+                $this->executeCommand('npm run format');
+            }
 
             // Commit de cambios
             if ($this->confirm('¿Hacer commit de los cambios?')) {
@@ -175,7 +181,10 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Build para staging
             $this->info('🏗️  Construyendo para staging...');
             $this->executeCommand('composer install --optimize-autoloader');
-            $this->executeCommand('npm run build');
+            
+            if ($this->commandExists('npm')) {
+                $this->executeCommand('npm run build');
+            }
 
             // Cache de configuración
             $this->executeCommand('php artisan config:cache');
@@ -231,7 +240,10 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Build para producción
             $this->info('🏗️  Construyendo para producción...');
             $this->executeCommand('composer install --optimize-autoloader --no-dev');
-            $this->executeCommand('npm run build');
+            
+            if ($this->commandExists('npm')) {
+                $this->executeCommand('npm run build');
+            }
 
             // Cache de configuración
             $this->executeCommand('php artisan config:cache');

@@ -15,8 +15,8 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
 
     public function handle(): int
     {
-        $this->info('📊 Monitoreo del Sistema');
-        $this->line('========================');
+        $this->info('📊 Monitoreo del Sistema - Mort Automation');
+        $this->line('==========================================');
 
         try {
             $this->checkSystemHealth();

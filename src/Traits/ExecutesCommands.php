@@ -11,7 +11,7 @@ trait ExecutesCommands
     /**
      * Ejecuta un comando del sistema de forma segura.
      */
-    protected function executeCommand(string $command): array
+    protected function executeCommand(string $command): object
     {
         $this->line("Ejecutando: {$command}");
         
@@ -28,11 +28,7 @@ trait ExecutesCommands
                 if ($result->output()) {
                     $this->line($result->output());
                 }
-                return [
-                    'success' => true,
-                    'output' => $result->output(),
-                    'error' => $result->errorOutput()
-                ];
+                return $result;
             } catch (\Exception $e) {
                 // Fallback to Symfony Process
                 $this->warn("Usando fallback para comando: {$command}");
@@ -54,11 +50,30 @@ trait ExecutesCommands
             $this->line($process->getOutput());
         }
         
-        return [
-            'success' => true,
-            'output' => $process->getOutput(),
-            'error' => $process->getErrorOutput()
-        ];
+        // Crear un objeto compatible con Laravel Process
+        return new class($process) {
+            private $process;
+            
+            public function __construct($process) {
+                $this->process = $process;
+            }
+            
+            public function successful(): bool {
+                return $this->process->isSuccessful();
+            }
+            
+            public function failed(): bool {
+                return !$this->process->isSuccessful();
+            }
+            
+            public function output(): string {
+                return $this->process->getOutput();
+            }
+            
+            public function errorOutput(): string {
+                return $this->process->getErrorOutput();
+            }
+        };
     }
 
     /**

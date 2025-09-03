@@ -55,7 +55,10 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             // Instalar dependencias
             $this->info('📦 Instalando dependencias...');
             $this->executeCommand('composer install --no-interaction');
-            $this->executeCommand('npm install');
+            
+            if ($this->commandExists('npm')) {
+                $this->executeCommand('npm install');
+            }
 
             // Configurar entorno
             if (!file_exists('.env')) {
@@ -115,9 +118,13 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
 
         try {
             $phpResult = $this->executeCommand('vendor/bin/pint --test');
-            $jsResult = $this->executeCommand('npm run lint');
+            
+            $jsResult = null;
+            if ($this->commandExists('npm')) {
+                $jsResult = $this->executeCommand('npm run lint');
+            }
 
-            if ($phpResult->successful() && $jsResult->successful()) {
+            if ($phpResult->successful() && ($jsResult === null || $jsResult->successful())) {
                 $this->info('✅ Linting completado sin errores');
                 return 0;
             } else {
@@ -139,8 +146,10 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             // Formatear PHP
             $this->executeCommand('vendor/bin/pint');
             
-            // Formatear JavaScript/TypeScript
-            $this->executeCommand('npm run format');
+            // Formatear JavaScript/TypeScript si está disponible
+            if ($this->commandExists('npm')) {
+                $this->executeCommand('npm run format');
+            }
 
             $this->info('✅ Formato aplicado correctamente');
             return 0;
@@ -158,7 +167,10 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
         try {
             // Optimizar para producción
             $this->executeCommand('composer install --optimize-autoloader --no-dev');
-            $this->executeCommand('npm run build');
+            
+            if ($this->commandExists('npm')) {
+                $this->executeCommand('npm run build');
+            }
 
             // Cache de configuración
             $this->executeCommand('php artisan config:cache');

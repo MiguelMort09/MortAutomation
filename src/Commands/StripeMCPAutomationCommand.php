@@ -415,6 +415,8 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  3. Crear clientes: php artisan mort:stripe create-customer');
             $this->line('  4. Sincronizar datos: php artisan mort:stripe sync-data');
             $this->line('  5. Ver ayuda: php artisan mort:stripe help');
+            $this->newLine();
+            $this->info('💡 Tip: Los precios se especifican en centavos (ej: 2999 = $29.99)');
 
             return 0;
 

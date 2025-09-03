@@ -100,9 +100,9 @@ class InitializeCommand extends Command
         $this->info('⚙️  Configurando archivos de configuración...');
 
         // Crear archivo de configuración si no existe
-        $configPath = config_path('mort-automation.php');
+        $configPath = config_path('automation.php');
         if (!file_exists($configPath)) {
-            $this->executeCommand('php artisan vendor:publish --tag=mort-automation-config');
+            $this->executeCommand('php artisan vendor:publish --provider="Mort\\Automation\\AutomationServiceProvider" --tag="config"');
             $this->info('✅ Archivo de configuración creado');
         } else {
             $this->info('ℹ️  Archivo de configuración ya existe');
@@ -126,7 +126,7 @@ class InitializeCommand extends Command
         $this->info('📁 Publicando assets...');
         
         try {
-            $this->executeCommand('php artisan vendor:publish --tag=mort-automation-assets --force');
+            $this->executeCommand('php artisan vendor:publish --provider="Mort\\Automation\\AutomationServiceProvider" --tag="assets" --force');
             $this->info('✅ Assets publicados');
         } catch (\Exception $e) {
             $this->warn('⚠️  No se pudieron publicar los assets: ' . $e->getMessage());
@@ -146,7 +146,7 @@ class InitializeCommand extends Command
                 return !empty($output);
             },
             'Configuración' => function() {
-                return file_exists(config_path('mort-automation.php'));
+                return file_exists(config_path('automation.php'));
             }
         ];
 

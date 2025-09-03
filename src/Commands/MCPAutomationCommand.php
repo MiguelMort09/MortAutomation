@@ -70,6 +70,9 @@ class MCPAutomationCommand extends Command implements AutomationInterface
             $this->line('📖 Documentación de TailwindCSS');
             $this->line('📖 Documentación de Pest');
             
+            $this->line('');
+            $this->info('💡 Tip: Usa "php artisan mort:mcp get-library-docs --package=nombre" para obtener docs específicas');
+            
             $this->info('✅ Búsqueda completada');
             return 0;
 

@@ -33,37 +33,37 @@ class HelpCommand extends Command
 
         $commands = [
             'mort:init' => [
-                'description' => 'Inicializa el package instalando todas las dependencias necesarias',
+                'description' => 'Inicializa completamente el package: instala dependencias, configura archivos y prepara el entorno',
                 'options' => ['--force', '--dev'],
                 'example' => 'php artisan mort:init --force'
             ],
             'mort:dev setup' => [
-                'description' => 'Configura el entorno de desarrollo con todas las herramientas',
+                'description' => 'Configura el entorno de desarrollo: instala dependencias, configura archivos y prepara herramientas',
                 'options' => ['--force', '--skip-tests'],
                 'example' => 'php artisan mort:dev setup'
             ],
             'mort:dev test' => [
-                'description' => 'Ejecuta tests con configuración optimizada',
+                'description' => 'Ejecuta todos los tests con Pest y genera reportes de cobertura de código',
                 'options' => ['--coverage', '--filter'],
                 'example' => 'php artisan mort:dev test --coverage'
             ],
-            'mort:workflow create' => [
-                'description' => 'Crea un nuevo workflow de desarrollo',
+            'mort:workflow start-feature' => [
+                'description' => 'Inicia nueva feature: crea rama, configura entorno y prepara para desarrollo',
                 'options' => ['--name', '--template'],
-                'example' => 'php artisan mort:workflow create --name="feature-branch"'
+                'example' => 'php artisan mort:workflow start-feature --name="mi-feature"'
             ],
             'mort:mcp setup' => [
-                'description' => 'Configura todos los MCPs disponibles',
+                'description' => 'Configura todos los MCPs: Laravel Boost, Context7, GitHub y Stripe',
                 'options' => ['--laravel-boost', '--context7', '--github', '--stripe'],
                 'example' => 'php artisan mort:mcp setup --all'
             ],
             'mort:stripe sync' => [
-                'description' => 'Sincroniza datos con Stripe',
+                'description' => 'Sincroniza productos y precios entre la base de datos local y Stripe',
                 'options' => ['--force', '--dry-run'],
                 'example' => 'php artisan mort:stripe sync --force'
             ],
             'mort:monitor' => [
-                'description' => 'Monitorea el estado del sistema',
+                'description' => 'Verifica estado del sistema: BD, performance, logs y métricas generales',
                 'options' => ['--detailed', '--export'],
                 'example' => 'php artisan mort:monitor --detailed'
             ],
