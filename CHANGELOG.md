@@ -7,6 +7,23 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 
 
+## [1.3.6] - 2025-01-27
+
+### Corregido
+- Error persistente de cache de Pest en GitHub Actions
+- Scripts de Composer actualizados con parámetro --cache-directory
+- Workflow de GitHub Actions mejorado con directorio de cache explícito
+
+### Agregado
+- Workflow de tests separado (.github/workflows/tests.yml)
+- Creación automática del directorio .pest en CI/CD
+- Verificaciones de estilo y análisis estático en CI
+
+### Mejorado
+- Estabilidad completa en GitHub Actions
+- Tests funcionando correctamente en todos los entornos
+- CI/CD robusto y confiable
+
 ## [1.3.5] - 2025-01-27
 
 ### Corregido

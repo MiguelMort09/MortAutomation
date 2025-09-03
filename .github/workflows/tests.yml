@@ -2,20 +2,13 @@ name: Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ master, main ]
 
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        php: [8.4]
-        laravel: [12.0]
-
-    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
     steps:
     - uses: actions/checkout@v4
@@ -23,40 +16,19 @@ jobs:
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: ${{ matrix.php }}
+        php-version: 8.3
         extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
-        coverage: none
 
-    - name: Get composer cache directory
-      id: composer-cache
-      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-    - name: Cache composer dependencies
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-        restore-keys: ${{ runner.os }}-composer-
+    - name: Create Pest cache directory
+      run: mkdir -p .pest
 
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress --no-suggest
 
-    - name: Copy environment file
-      run: cp .env.example .env
-
-    - name: Generate application key
-      run: php artisan key:generate
-
-    - name: Create database
-      run: touch database/database.sqlite
-
-    - name: Run migrations
-      run: php artisan migrate --force
-
     - name: Run tests
       run: composer test
 
-    - name: Run code style check
+    - name: Run style check
       run: composer check-style
 
     - name: Run static analysis
