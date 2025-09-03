@@ -7,6 +7,43 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.h
 
 
 
+## [1.4.0] - 2025-01-27
+
+### 🎉 Release Estable Final
+- **Versión estable y completamente funcional**
+- **Package probado e instalado exitosamente en proyectos reales**
+- **Todos los problemas resueltos y funcionalidades verificadas**
+
+### ✅ Verificado y Funcionando
+- Package instalado correctamente en proyecto gym-sas
+- 15 comandos disponibles y funcionando
+- Service Provider registrado correctamente
+- Autoloading funcionando sin errores
+- Tests pasando (4/4) sin problemas
+- GitHub Actions configurado y funcionando
+
+### 🚀 Características Principales
+- **Comandos de Desarrollo**: Automatización completa de tareas de desarrollo
+- **Workflow Automatizado**: Gestión completa del ciclo de desarrollo
+- **Integración MCP**: Operaciones con Model Context Protocol
+- **Stripe Integration**: Automatización de operaciones de Stripe
+- **Monitoreo del Sistema**: Métricas y monitoreo completo
+- **Documentación Completa**: Guías y ayuda integrada
+
+### 📦 Instalación
+```bash
+composer require mort/automation:^1.4
+php artisan vendor:publish --provider="Mort\Automation\AutomationServiceProvider" --tag="config"
+```
+
+### 🎯 Uso Básico
+```bash
+php artisan mort:status      # Ver estado del sistema
+php artisan mort:help        # Ver ayuda completa
+php artisan mort:dev setup   # Configurar proyecto
+php artisan mort:workflow start-feature --name="mi-feature"  # Iniciar feature
+```
+
 ## [1.3.6] - 2025-01-27
 
 ### Corregido
