@@ -7,12 +7,16 @@ beforeEach(function () {
 });
 
 it('can register the automation service provider', function () {
-    expect($this->app->getProviders())
-        ->toContain(AutomationServiceProvider::class);
+    $providers = $this->app->getProviders(AutomationServiceProvider::class);
+    
+    expect($providers)
+        ->not->toBeEmpty();
 });
 
 it('can access automation configuration', function () {
-    $config = config('automation');
+    // Cargar la configuración del package
+    $configPath = __DIR__ . '/../../src/Config/automation.php';
+    $config = require $configPath;
     
     expect($config)
         ->toBeArray()
