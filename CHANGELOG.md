@@ -5,6 +5,20 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+
+## [1.3.2] - 2025-01-27
+
+### Corregido
+- Directorio de tests faltante que causaba errores en GitHub Actions
+- Configuración de Pest para testing con Laravel
+- Dependencias de testing agregadas (orchestra/testbench, pest-plugin-laravel)
+
+### Agregado
+- Estructura básica de tests con Pest
+- Tests unitarios y de feature
+- Configuración de TestCase para packages de Laravel
+
 ## [1.3.1] - 2025-01-27
 
 ### Corregido
