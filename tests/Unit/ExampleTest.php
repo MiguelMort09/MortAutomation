@@ -4,7 +4,8 @@ use Mort\Automation\Contracts\AutomationInterface;
 use Mort\Automation\Traits\ExecutesCommands;
 
 it('can create a command that implements AutomationInterface', function () {
-    $command = new class implements AutomationInterface {
+    $command = new class implements AutomationInterface
+    {
         use ExecutesCommands;
 
         public function executeAutomation(): int
@@ -22,13 +23,14 @@ it('can create a command that implements AutomationInterface', function () {
             return 'Test command';
         }
     };
-    
+
     expect($command)
         ->toBeInstanceOf(AutomationInterface::class);
 });
 
 it('can execute a command successfully', function () {
-    $command = new class implements AutomationInterface {
+    $command = new class implements AutomationInterface
+    {
         use ExecutesCommands;
 
         public function executeAutomation(): int
@@ -46,7 +48,7 @@ it('can execute a command successfully', function () {
             return 'Test command';
         }
     };
-    
+
     expect($command->executeAutomation())
         ->toBe(0);
 });

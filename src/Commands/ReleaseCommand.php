@@ -3,14 +3,15 @@
 namespace Mort\Automation\Commands;
 
 use Illuminate\Console\Command;
-use Mort\Automation\Traits\ExecutesCommands;
 use Mort\Automation\Contracts\AutomationInterface;
+use Mort\Automation\Traits\ExecutesCommands;
 
 class ReleaseCommand extends Command implements AutomationInterface
 {
     use ExecutesCommands;
 
     protected $signature = 'mort:release {type? : Tipo de incremento (patch, minor, major)}';
+
     protected $description = 'Automatizar el proceso de release (changelog, tag, push)';
 
     public function handle(): int
@@ -23,7 +24,7 @@ class ReleaseCommand extends Command implements AutomationInterface
 
         // 2. Determinar tipo de incremento
         $type = $this->argument('type');
-        if (!$type) {
+        if (! $type) {
             $type = $this->choice('¿Qué tipo de release es?', ['patch', 'minor', 'major'], 'patch');
         }
 
@@ -31,8 +32,9 @@ class ReleaseCommand extends Command implements AutomationInterface
         $newVersion = $this->calculateNewVersion($currentVersion, $type);
         $this->info("✨ Nueva versión será: {$newVersion}");
 
-        if (!$this->confirm('¿Continuar con este release?')) {
+        if (! $this->confirm('¿Continuar con este release?')) {
             $this->info('Operación cancelada.');
+
             return self::SUCCESS;
         }
 
@@ -56,11 +58,11 @@ class ReleaseCommand extends Command implements AutomationInterface
             }
 
             $this->info("✅ Release {$newVersion} completado exitosamente!");
-            
-            return self::SUCCESS;
 
+            return self::SUCCESS;
         } catch (\Exception $e) {
             $this->error("❌ Error durante el release: {$e->getMessage()}");
+
             return self::FAILURE;
         }
     }
@@ -84,6 +86,7 @@ class ReleaseCommand extends Command implements AutomationInterface
     {
         try {
             $result = $this->executeCommand('git describe --tags --abbrev=0');
+
             return trim($result->output());
         } catch (\Exception $e) {
             return 'v0.0.0';
@@ -94,15 +97,15 @@ class ReleaseCommand extends Command implements AutomationInterface
     {
         $version = ltrim($currentVersion, 'v');
         $parts = explode('.', $version);
-        
+
         // Asegurar que tenemos 3 partes
         while (count($parts) < 3) {
             $parts[] = '0';
         }
 
-        $major = (int)$parts[0];
-        $minor = (int)$parts[1];
-        $patch = (int)$parts[2];
+        $major = (int) $parts[0];
+        $minor = (int) $parts[1];
+        $patch = (int) $parts[2];
 
         match ($type) {
             'major' => $major++,
@@ -125,26 +128,26 @@ class ReleaseCommand extends Command implements AutomationInterface
     private function updateChangelog(string $version): void
     {
         $this->info('📄 Actualizando CHANGELOG.md...');
-        
+
         $changelogPath = base_path('CHANGELOG.md');
-        
-        if (!file_exists($changelogPath)) {
+
+        if (! file_exists($changelogPath)) {
             $this->warn('⚠️  CHANGELOG.md no encontrado, creando uno nuevo...');
             file_put_contents($changelogPath, "# Changelog\n\n");
         }
 
         $content = file_get_contents($changelogPath);
         $date = date('Y-m-d');
-        
+
         $newEntry = "\n## [{$version}] - {$date}\n\n### Agregado\n- Nuevo release generado automáticamente.\n";
-        
+
         // Insertar después del primer encabezado o al principio si no hay estructura clara
         // Buscamos el primer encabezado de versión ## [x.x.x]
         if (preg_match('/## \[\d+\.\d+\.\d+\]/', $content)) {
-             $content = preg_replace('/(## \[\d+\.\d+\.\d+\])/', $newEntry . "\n$1", $content, 1);
+            $content = preg_replace('/(## \[\d+\.\d+\.\d+\])/', $newEntry."\n$1", $content, 1);
         } else {
             // Si no encuentra versiones anteriores, agregarlo después del título principal
-             $content = preg_replace('/(# Changelog.*?\n)/s', "$1" . $newEntry, $content, 1);
+            $content = preg_replace('/(# Changelog.*?\n)/s', '$1'.$newEntry, $content, 1);
         }
 
         file_put_contents($changelogPath, $content);

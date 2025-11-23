@@ -20,6 +20,7 @@ class HelpCommand extends Command
         }
 
         $this->showGeneralHelp();
+
         return self::SUCCESS;
     }
 
@@ -27,7 +28,7 @@ class HelpCommand extends Command
     {
         $this->info('🚀 Mort Automation - Herramientas de Desarrollo y Monitoreo');
         $this->newLine();
-        
+
         $this->info('📋 Comandos Disponibles:');
         $this->newLine();
 
@@ -35,45 +36,45 @@ class HelpCommand extends Command
             'mort:init' => [
                 'description' => 'Inicializa completamente el package: instala dependencias, configura archivos y prepara el entorno',
                 'options' => ['--force', '--dev'],
-                'example' => 'php artisan mort:init --force'
+                'example' => 'php artisan mort:init --force',
             ],
             'mort:dev setup' => [
                 'description' => 'Configura el entorno de desarrollo: instala dependencias, configura archivos y prepara herramientas',
                 'options' => ['--force', '--skip-tests'],
-                'example' => 'php artisan mort:dev setup'
+                'example' => 'php artisan mort:dev setup',
             ],
             'mort:dev test' => [
                 'description' => 'Ejecuta todos los tests con Pest y genera reportes de cobertura de código',
                 'options' => ['--coverage', '--filter'],
-                'example' => 'php artisan mort:dev test --coverage'
+                'example' => 'php artisan mort:dev test --coverage',
             ],
             'mort:workflow start-feature' => [
                 'description' => 'Inicia nueva feature: crea rama, configura entorno y prepara para desarrollo',
                 'options' => ['--name', '--template'],
-                'example' => 'php artisan mort:workflow start-feature --name="mi-feature"'
+                'example' => 'php artisan mort:workflow start-feature --name="mi-feature"',
             ],
             'mort:mcp setup' => [
                 'description' => 'Configura todos los MCPs: Laravel Boost, Context7, GitHub y Stripe',
                 'options' => ['--laravel-boost', '--context7', '--github', '--stripe'],
-                'example' => 'php artisan mort:mcp setup --all'
+                'example' => 'php artisan mort:mcp setup --all',
             ],
             'mort:stripe sync' => [
                 'description' => 'Sincroniza productos y precios entre la base de datos local y Stripe',
                 'options' => ['--force', '--dry-run'],
-                'example' => 'php artisan mort:stripe sync --force'
+                'example' => 'php artisan mort:stripe sync --force',
             ],
             'mort:monitor' => [
                 'description' => 'Verifica estado del sistema: BD, performance, logs y métricas generales',
                 'options' => ['--detailed', '--export'],
-                'example' => 'php artisan mort:monitor --detailed'
+                'example' => 'php artisan mort:monitor --detailed',
             ],
         ];
 
         foreach ($commands as $command => $info) {
             $this->line("  <fg=green>{$command}</>");
             $this->line("    {$info['description']}");
-            if (!empty($info['options'])) {
-                $this->line("    <fg=yellow>Opciones:</> " . implode(', ', $info['options']));
+            if (! empty($info['options'])) {
+                $this->line('    <fg=yellow>Opciones:</> '.implode(', ', $info['options']));
             }
             $this->line("    <fg=blue>Ejemplo:</> {$info['example']}");
             $this->newLine();
@@ -98,12 +99,12 @@ class HelpCommand extends Command
                 'usage' => 'php artisan mort:init [opciones]',
                 'options' => [
                     '--force' => 'Forzar la instalación sin confirmación',
-                    '--dev' => 'Instalar dependencias de desarrollo'
+                    '--dev' => 'Instalar dependencias de desarrollo',
                 ],
                 'examples' => [
                     'php artisan mort:init',
                     'php artisan mort:init --force',
-                    'php artisan mort:init --dev'
+                    'php artisan mort:init --dev',
                 ],
                 'steps' => [
                     'Instala dependencias de Composer',
@@ -111,8 +112,8 @@ class HelpCommand extends Command
                     'Configura archivos de configuración',
                     'Ejecuta migraciones',
                     'Publica assets',
-                    'Verifica la instalación'
-                ]
+                    'Verifica la instalación',
+                ],
             ],
             'dev' => [
                 'title' => 'Comandos de Desarrollo',
@@ -121,8 +122,8 @@ class HelpCommand extends Command
                     'setup' => 'Configura el entorno de desarrollo',
                     'test' => 'Ejecuta tests con configuración optimizada',
                     'lint' => 'Ejecuta herramientas de análisis de código',
-                    'format' => 'Formatea el código según los estándares'
-                ]
+                    'format' => 'Formatea el código según los estándares',
+                ],
             ],
             'monitor' => [
                 'title' => 'Sistema de Monitoreo',
@@ -130,7 +131,7 @@ class HelpCommand extends Command
                 'usage' => 'php artisan mort:monitor [opciones]',
                 'options' => [
                     '--detailed' => 'Mostrar información detallada',
-                    '--export' => 'Exportar resultados a archivo'
+                    '--export' => 'Exportar resultados a archivo',
                 ],
                 'checks' => [
                     'Estado del servidor web',
@@ -138,19 +139,20 @@ class HelpCommand extends Command
                     'Métricas de seguridad',
                     'Rendimiento del sistema',
                     'Espacio en disco',
-                    'Logs de errores'
-                ]
-            ]
+                    'Logs de errores',
+                ],
+            ],
         ];
 
-        if (!isset($helpData[$command])) {
+        if (! isset($helpData[$command])) {
             $this->error("❌ Comando '{$command}' no encontrado.");
-            $this->info('Comandos disponibles: ' . implode(', ', array_keys($helpData)));
+            $this->info('Comandos disponibles: '.implode(', ', array_keys($helpData)));
+
             return self::FAILURE;
         }
 
         $data = $helpData[$command];
-        
+
         $this->info("📖 {$data['title']}");
         $this->newLine();
         $this->line($data['description']);

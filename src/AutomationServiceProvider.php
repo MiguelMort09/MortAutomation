@@ -4,13 +4,13 @@ namespace Mort\Automation;
 
 use Illuminate\Support\ServiceProvider;
 use Mort\Automation\Commands\DevelopmentAutomationCommand;
-use Mort\Automation\Commands\WorkflowAutomationCommand;
+use Mort\Automation\Commands\HelpCommand;
+use Mort\Automation\Commands\InitializeCommand;
 use Mort\Automation\Commands\MCPAutomationCommand;
+use Mort\Automation\Commands\ReleaseCommand;
 use Mort\Automation\Commands\StripeMCPAutomationCommand;
 use Mort\Automation\Commands\SystemMonitoringCommand;
-use Mort\Automation\Commands\InitializeCommand;
-use Mort\Automation\Commands\ReleaseCommand;
-use Mort\Automation\Commands\HelpCommand;
+use Mort\Automation\Commands\WorkflowAutomationCommand;
 
 class AutomationServiceProvider extends ServiceProvider
 {
@@ -20,7 +20,8 @@ class AutomationServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__.'/Config/automation.php', 'mort-automation'
+            __DIR__.'/Config/automation.php',
+            'mort-automation'
         );
     }
 

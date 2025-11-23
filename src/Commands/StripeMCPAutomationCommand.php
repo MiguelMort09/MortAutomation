@@ -3,14 +3,15 @@
 namespace Mort\Automation\Commands;
 
 use Illuminate\Console\Command;
-use Mort\Automation\Traits\ExecutesCommands;
 use Mort\Automation\Contracts\AutomationInterface;
+use Mort\Automation\Traits\ExecutesCommands;
 
 class StripeMCPAutomationCommand extends Command implements AutomationInterface
 {
     use ExecutesCommands;
 
     protected $signature = 'mort:stripe {action} {--customer=} {--product=} {--price=} {--amount=} {--currency=usd} {--force}';
+
     protected $description = 'Automatizar operaciones de Stripe usando MCP siguiendo la guía de Mort';
 
     public function handle(): int
@@ -56,8 +57,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $name = $this->ask('Nombre del cliente');
             $email = $this->ask('Email del cliente');
 
-            if (!$name) {
+            if (! $name) {
                 $this->error('❌ Se requiere un nombre');
+
                 return 1;
             }
 
@@ -74,9 +76,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Crear payment links');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -89,8 +91,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $name = $this->ask('Nombre del producto');
             $description = $this->ask('Descripción del producto (opcional)');
 
-            if (!$name) {
+            if (! $name) {
                 $this->error('❌ Se requiere un nombre');
+
                 return 1;
             }
 
@@ -106,9 +109,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Configurar payment links');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -122,8 +125,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $amount = $this->option('amount') ?? $this->ask('Monto (en centavos)');
             $currency = $this->option('currency') ?? $this->ask('Moneda (ej: usd, eur)', 'usd');
 
-            if (!$product || !$amount) {
+            if (! $product || ! $amount) {
                 $this->error('❌ Se requiere producto y monto');
+
                 return 1;
             }
 
@@ -137,9 +141,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Configurar suscripciones');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -153,15 +157,16 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $quantity = $this->ask('Cantidad', '1');
             $redirectUrl = $this->ask('URL de redirección (opcional)');
 
-            if (!$price) {
+            if (! $price) {
                 $this->error('❌ Se requiere un precio');
+
                 return 1;
             }
 
             // Aquí iría la integración real con el MCP de Stripe
             $this->info("✅ Payment link creado para precio: {$price}");
             $this->info("📊 Cantidad: {$quantity}");
-            
+
             if ($redirectUrl) {
                 $this->info("🔗 Redirección: {$redirectUrl}");
             }
@@ -172,9 +177,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Monitorear pagos');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -185,8 +190,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
         try {
             // Verificar configuración
-            if (!$this->isAvailable()) {
+            if (! $this->isAvailable()) {
                 $this->error('❌ Stripe no está configurado correctamente');
+
                 return 1;
             }
 
@@ -205,10 +211,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->syncPrices();
 
             $this->info('✅ Sincronización completada');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -223,7 +230,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                 'products' => 'Productos',
                 'payments' => 'Pagos',
                 'revenue' => 'Ingresos',
-                'summary' => 'Resumen general'
+                'summary' => 'Resumen general',
             ]);
 
             $this->info("📋 Generando reporte: {$reportType}");
@@ -237,10 +244,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Ingresos totales: $12,500.00');
 
             $this->info('✅ Reporte generado exitosamente');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -261,10 +269,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Carlos López (carlos@example.com)');
 
             $this->info('✅ Lista de clientes obtenida');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -284,10 +293,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Membresía VIP');
 
             $this->info('✅ Lista de productos obtenida');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -308,10 +318,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  - Membresía VIP: $99.99/mes');
 
             $this->info('✅ Lista de precios obtenida');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -342,55 +353,56 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
         try {
             // Verificar configuración actual
             $this->info('🔍 Verificando configuración actual...');
-            
+
             $hasKey = config('cashier.key');
             $hasSecret = config('cashier.secret');
             $hasWebhook = config('cashier.webhook.secret');
 
             if ($hasKey && $hasSecret) {
                 $this->info('✅ Stripe ya está configurado');
-                $this->line("  - Key: " . substr($hasKey, 0, 8) . '...');
-                $this->line("  - Secret: " . substr($hasSecret, 0, 8) . '...');
-                
+                $this->line('  - Key: '.substr($hasKey, 0, 8).'...');
+                $this->line('  - Secret: '.substr($hasSecret, 0, 8).'...');
+
                 if ($hasWebhook) {
-                    $this->line("  - Webhook: " . substr($hasWebhook, 0, 8) . '...');
+                    $this->line('  - Webhook: '.substr($hasWebhook, 0, 8).'...');
                 } else {
                     $this->warn('  ⚠️  Webhook secret no configurado');
                 }
             } else {
                 $this->warn('⚠️  Stripe no está configurado completamente');
-                $this->line('  - Key: ' . ($hasKey ? '✅' : '❌'));
-                $this->line('  - Secret: ' . ($hasSecret ? '✅' : '❌'));
+                $this->line('  - Key: '.($hasKey ? '✅' : '❌'));
+                $this->line('  - Secret: '.($hasSecret ? '✅' : '❌'));
             }
 
             $this->newLine();
 
             // Configurar variables de entorno si es necesario
-            if (!$hasKey || !$hasSecret) {
+            if (! $hasKey || ! $hasSecret) {
                 $this->info('🔧 Configurando variables de entorno...');
-                
+
                 $key = $this->ask('Stripe Publishable Key (pk_test_...)');
                 $secret = $this->ask('Stripe Secret Key (sk_test_...)');
                 $webhook = $this->ask('Stripe Webhook Secret (whsec_...) [opcional]');
 
                 if ($key && $secret) {
                     $this->info('📝 Agregando variables al archivo .env...');
-                    
+
                     $envContent = "\n# Stripe Configuration\n";
                     $envContent .= "STRIPE_KEY={$key}\n";
                     $envContent .= "STRIPE_SECRET={$secret}\n";
-                    
+
                     if ($webhook) {
                         $envContent .= "STRIPE_WEBHOOK_SECRET={$webhook}\n";
                     }
 
                     $envFile = base_path('.env');
                     file_put_contents($envFile, $envContent, FILE_APPEND | LOCK_EX);
-                    
+
                     $this->info('✅ Variables de entorno agregadas');
                     $this->warn('⚠️  Reinicia el servidor para aplicar los cambios');
                 } else {
                     $this->error('❌ Se requieren Key y Secret para continuar');
+
                     return 1;
                 }
             }
@@ -400,7 +412,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->testStripeConnection();
 
             // Configurar webhooks si es necesario
-            if (!$hasWebhook) {
+            if (! $hasWebhook) {
                 $this->info('🔗 Configuración de webhooks...');
                 $this->setupWebhooks();
             }
@@ -419,9 +431,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->info('💡 Tip: Los precios se especifican en centavos (ej: 2999 = $29.99)');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error durante la configuración: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -434,7 +446,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             sleep(1); // Simular delay
             $this->line('  ✅ Conexión exitosa');
         } catch (\Exception $e) {
-            $this->line('  ❌ Error de conexión: ' . $e->getMessage());
+            $this->line('  ❌ Error de conexión: '.$e->getMessage());
         }
     }
 
@@ -446,14 +458,14 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
         $this->line('     - customer.subscription.created');
         $this->line('     - customer.subscription.updated');
         $this->line('     - customer.subscription.deleted');
-        $this->line('  🔗 URL del webhook: ' . url('/stripe/webhook'));
+        $this->line('  🔗 URL del webhook: '.url('/stripe/webhook'));
     }
 
     private function showHelp(): int
     {
         $this->info('💳 Mort Stripe Automation - Comandos Disponibles');
         $this->newLine();
-        
+
         $commands = [
             'setup' => 'Configurar Stripe y variables de entorno',
             'create-customer' => 'Crear un nuevo cliente en Stripe',
@@ -465,7 +477,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             'list-customers' => 'Listar clientes de Stripe',
             'list-products' => 'Listar productos de Stripe',
             'list-prices' => 'Listar precios de Stripe',
-            'help' => 'Mostrar esta ayuda'
+            'help' => 'Mostrar esta ayuda',
         ];
 
         foreach ($commands as $command => $description) {
@@ -493,7 +505,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
         $this->newLine();
         $this->info('📚 Para ver ayuda detallada:');
         $this->line('  php artisan mort:stripe help');
-        
+
         return 1;
     }
 }

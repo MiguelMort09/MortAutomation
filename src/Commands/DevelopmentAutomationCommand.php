@@ -3,14 +3,15 @@
 namespace Mort\Automation\Commands;
 
 use Illuminate\Console\Command;
-use Mort\Automation\Traits\ExecutesCommands;
 use Mort\Automation\Contracts\AutomationInterface;
+use Mort\Automation\Traits\ExecutesCommands;
 
 class DevelopmentAutomationCommand extends Command implements AutomationInterface
 {
     use ExecutesCommands;
 
     protected $signature = 'mort:dev {action} {--force}';
+
     protected $description = 'Automatizar tareas de desarrollo siguiendo la guía de Mort';
 
     public function handle(): int
@@ -55,13 +56,13 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             // Instalar dependencias
             $this->info('📦 Instalando dependencias...');
             $this->executeCommand('composer install --no-interaction');
-            
+
             if ($this->commandExists('npm')) {
                 $this->executeCommand('npm install');
             }
 
             // Configurar entorno
-            if (!file_exists('.env')) {
+            if (! file_exists('.env')) {
                 $this->info('⚙️  Configurando entorno...');
                 $this->executeCommand('cp .env.example .env');
                 $this->executeCommand('php artisan key:generate');
@@ -79,10 +80,11 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             $this->executeCommand('php artisan view:cache');
 
             $this->info('✅ Configuración completada');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -100,14 +102,16 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
 
             if ($result->successful()) {
                 $this->info('✅ Todos los tests pasaron');
+
                 return 0;
             } else {
                 $this->error('❌ Algunos tests fallaron');
+
                 return 1;
             }
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -118,7 +122,7 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
 
         try {
             $phpResult = $this->executeCommand('vendor/bin/pint --test');
-            
+
             $jsResult = null;
             if ($this->commandExists('npm')) {
                 $jsResult = $this->executeCommand('npm run lint');
@@ -126,14 +130,16 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
 
             if ($phpResult->successful() && ($jsResult === null || $jsResult->successful())) {
                 $this->info('✅ Linting completado sin errores');
+
                 return 0;
             } else {
                 $this->warn('⚠️  Se encontraron errores de linting');
+
                 return 1;
             }
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -145,17 +151,18 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
         try {
             // Formatear PHP
             $this->executeCommand('vendor/bin/pint');
-            
+
             // Formatear JavaScript/TypeScript si está disponible
             if ($this->commandExists('npm')) {
                 $this->executeCommand('npm run format');
             }
 
             $this->info('✅ Formato aplicado correctamente');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -167,7 +174,7 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
         try {
             // Optimizar para producción
             $this->executeCommand('composer install --optimize-autoloader --no-dev');
-            
+
             if ($this->commandExists('npm')) {
                 $this->executeCommand('npm run build');
             }
@@ -178,10 +185,11 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             $this->executeCommand('php artisan view:cache');
 
             $this->info('✅ Build completado');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -192,17 +200,19 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
 
         try {
             // Verificar que el build esté listo
-            if (!$this->isBuildReady()) {
+            if (! $this->isBuildReady()) {
                 $this->error('❌ El proyecto no está listo para deploy. Ejecuta build primero.');
+
                 return 1;
             }
 
             // Aquí iría la lógica de deploy específica
             $this->info('✅ Deploy completado');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -214,18 +224,19 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
         try {
             // Verificar logs
             $this->checkLogs();
-            
+
             // Verificar base de datos
             $this->checkDatabase();
-            
+
             // Verificar servicios
             $this->checkServices();
 
             $this->info('✅ Monitoreo completado');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -248,10 +259,11 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             $this->cleanTempFiles();
 
             $this->info('✅ Limpieza completada');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -265,7 +277,7 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             $backupPath = storage_path("backups/backup_{$timestamp}");
 
             // Crear directorio de backup
-            if (!is_dir($backupPath)) {
+            if (! is_dir($backupPath)) {
                 mkdir($backupPath, 0755, true);
             }
 
@@ -276,10 +288,11 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
             $this->backupImportantFiles($backupPath);
 
             $this->info("✅ Backup creado en: {$backupPath}");
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -291,10 +304,11 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
         try {
             // Aquí iría la lógica de restauración
             $this->info('✅ Restauración completada');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -310,7 +324,7 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
         if (file_exists($logPath)) {
             $logSize = filesize($logPath);
             if ($logSize > 10 * 1024 * 1024) { // 10MB
-                $this->warn('⚠️  Log file is large: ' . number_format($logSize / 1024 / 1024, 2) . 'MB');
+                $this->warn('⚠️  Log file is large: '.number_format($logSize / 1024 / 1024, 2).'MB');
             }
         }
     }
@@ -335,8 +349,8 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
     {
         $logPath = storage_path('logs');
         if (is_dir($logPath)) {
-            $files = glob($logPath . '/*.log');
-            
+            $files = glob($logPath.'/*.log');
+
             foreach ($files as $file) {
                 if (filemtime($file) < strtotime('-7 days')) {
                     unlink($file);
@@ -356,7 +370,7 @@ class DevelopmentAutomationCommand extends Command implements AutomationInterfac
 
         foreach ($tempPaths as $path) {
             if (is_dir($path)) {
-                $files = glob($path . '/*');
+                $files = glob($path.'/*');
                 foreach ($files as $file) {
                     if (is_file($file)) {
                         unlink($file);

@@ -3,14 +3,15 @@
 namespace Mort\Automation\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Mort\Automation\Contracts\AutomationInterface;
 
 class SystemMonitoringCommand extends Command implements AutomationInterface
 {
     protected $signature = 'mort:monitor {--detailed} {--export}';
+
     protected $description = 'Monitorear el sistema siguiendo las métricas de Mort';
 
     public function handle(): int
@@ -34,10 +35,11 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
             }
 
             $this->info('✅ Monitoreo completado');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -90,11 +92,11 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
         // Verificar memoria
         $memoryUsage = memory_get_usage(true);
         $memoryLimit = ini_get('memory_limit');
-        $this->info("💾 Memoria: " . $this->formatBytes($memoryUsage) . " / {$memoryLimit}");
+        $this->info('💾 Memoria: '.$this->formatBytes($memoryUsage)." / {$memoryLimit}");
 
         // Verificar tiempo de ejecución
         $executionTime = microtime(true) - ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
-        $this->info("⏱️  Tiempo de ejecución: " . number_format($executionTime, 3) . "s");
+        $this->info('⏱️  Tiempo de ejecución: '.number_format($executionTime, 3).'s');
     }
 
     private function checkDatabaseHealth(): void
@@ -105,7 +107,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
         try {
             // Verificar conexiones activas
             $connections = DB::select('SHOW STATUS LIKE "Threads_connected"');
-            if (!empty($connections)) {
+            if (! empty($connections)) {
                 $this->info("🔗 Conexiones activas: {$connections[0]->Value}");
             }
 
@@ -116,8 +118,8 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                 FROM information_schema.tables 
                 WHERE table_schema = DATABASE()
             ");
-            
-            if (!empty($dbSize)) {
+
+            if (! empty($dbSize)) {
                 $this->info("📊 Tamaño de BD: {$dbSize[0]->{'DB Size in MB'}} MB");
             }
 
@@ -138,7 +140,6 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                 $size = $table->{'Size in MB'} ?? $table->{'Size_MB'} ?? '0';
                 $this->line("  - {$tableName}: {$size} MB");
             }
-
         } catch (\Exception $e) {
             $this->error("❌ Error verificando base de datos: {$e->getMessage()}");
         }
@@ -198,8 +199,8 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                     ->whereMonth('created_at', now()->month)
                     ->sum('total') ?? 0;
 
-                $this->info("💰 Ingresos totales: $" . number_format($totalRevenue / 100, 2));
-                $this->info("💰 Ingresos del mes: $" . number_format($monthlyRevenue / 100, 2));
+                $this->info('💰 Ingresos totales: $'.number_format($totalRevenue / 100, 2));
+                $this->info('💰 Ingresos del mes: $'.number_format($monthlyRevenue / 100, 2));
             }
 
             // Membresías
@@ -207,7 +208,6 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                 $totalMemberships = DB::table('memberships')->count();
                 $this->info("🎫 Membresías: {$totalMemberships}");
             }
-
         } catch (\Exception $e) {
             $this->error("❌ Error verificando métricas de aplicación: {$e->getMessage()}");
         }
@@ -220,7 +220,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
 
         try {
             // Verificar queries lentas (si está habilitado el slow log)
-            $slowQueries = DB::select("
+            $slowQueries = DB::select('
                 SELECT 
                     query_time,
                     lock_time,
@@ -231,9 +231,9 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                 WHERE start_time > DATE_SUB(NOW(), INTERVAL 1 HOUR)
                 ORDER BY query_time DESC
                 LIMIT 5
-            ");
+            ');
 
-            if (!empty($slowQueries)) {
+            if (! empty($slowQueries)) {
                 $this->warn('⚠️  Queries lentas detectadas:');
                 foreach ($slowQueries as $query) {
                     $this->line("  - Tiempo: {$query->query_time}s, Filas: {$query->rows_examined}");
@@ -249,13 +249,12 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
 
             if ($totalCacheRequests > 0) {
                 $hitRate = ($cacheHits / $totalCacheRequests) * 100;
-                $this->info("🎯 Cache hit rate: " . number_format($hitRate, 2) . "%");
+                $this->info('🎯 Cache hit rate: '.number_format($hitRate, 2).'%');
             }
 
             // Verificar tiempo de respuesta promedio
             $avgResponseTime = $this->getAverageResponseTime();
             $this->info("⏱️  Tiempo de respuesta promedio: {$avgResponseTime}ms");
-
         } catch (\Exception $e) {
             $this->error("❌ Error verificando métricas de rendimiento: {$e->getMessage()}");
         }
@@ -301,7 +300,6 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                     $this->info('✅ No hay pagos fallidos recientes');
                 }
             }
-
         } catch (\Exception $e) {
             $this->error("❌ Error verificando métricas de seguridad: {$e->getMessage()}");
         }
@@ -314,7 +312,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
 
         // Métricas por hora
         $this->showHourlyMetrics();
-        
+
         // Métricas por día
         $this->showDailyMetrics();
     }
@@ -322,9 +320,9 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
     private function showHourlyMetrics(): void
     {
         $this->info('📈 Métricas por Hora (Últimas 24h)');
-        
+
         try {
-            $hourlyData = DB::select("
+            $hourlyData = DB::select('
                 SELECT 
                     HOUR(created_at) as hour,
                     COUNT(*) as count
@@ -332,7 +330,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                 WHERE created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
                 GROUP BY HOUR(created_at)
                 ORDER BY hour
-            ");
+            ');
 
             foreach ($hourlyData as $data) {
                 $this->line("  {$data->hour}:00 - {$data->count} pagos");
@@ -345,9 +343,9 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
     private function showDailyMetrics(): void
     {
         $this->info('📅 Métricas por Día (Últimos 7 días)');
-        
+
         try {
-            $dailyData = DB::select("
+            $dailyData = DB::select('
                 SELECT 
                     DATE(created_at) as date,
                     COUNT(*) as payments,
@@ -356,7 +354,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                 WHERE created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)
                 GROUP BY DATE(created_at)
                 ORDER BY date
-            ");
+            ');
 
             foreach ($dailyData as $data) {
                 $revenue = number_format($data->revenue / 100, 2);
@@ -370,7 +368,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
     private function exportMetrics(): void
     {
         $this->info('📤 Exportando métricas...');
-        
+
         $metrics = [
             'timestamp' => now()->toISOString(),
             'system_health' => $this->getSystemHealthData(),
@@ -379,16 +377,16 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
             'security_metrics' => $this->getSecurityMetricsData(),
         ];
 
-        $filename = 'metrics_' . now()->format('Y-m-d_H-i-s') . '.json';
+        $filename = 'metrics_'.now()->format('Y-m-d_H-i-s').'.json';
         $path = storage_path("monitoring/{$filename}");
-        
+
         // Crear directorio si no existe
-        if (!file_exists(dirname($path))) {
+        if (! file_exists(dirname($path))) {
             mkdir(dirname($path), 0755, true);
         }
 
         file_put_contents($path, json_encode($metrics, JSON_PRETTY_PRINT));
-        
+
         $this->info("✅ Métricas exportadas a: {$path}");
     }
 
@@ -404,18 +402,18 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
     private function getApplicationMetricsData(): array
     {
         $data = [];
-        
+
         try {
             if (DB::getSchemaBuilder()->hasTable('users')) {
                 $data['total_users'] = DB::table('users')->count();
                 $data['active_users'] = DB::table('users')->whereNotNull('email_verified_at')->count();
             }
-            
+
             if (DB::getSchemaBuilder()->hasTable('customers')) {
                 $data['total_customers'] = DB::table('customers')->count();
                 $data['active_customers'] = DB::table('customers')->where('status', 1)->count();
             }
-            
+
             if (DB::getSchemaBuilder()->hasTable('payments')) {
                 $data['total_payments'] = DB::table('payments')->count();
                 $data['successful_payments'] = DB::table('payments')->where('status', 0)->count();
@@ -424,7 +422,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
         } catch (\Exception $e) {
             // Ignorar errores
         }
-        
+
         return $data;
     }
 
@@ -440,12 +438,12 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
     private function getSecurityMetricsData(): array
     {
         $data = [];
-        
+
         try {
             $data['failed_logins_24h'] = DB::table('failed_jobs')
                 ->where('failed_at', '>', now()->subDay())
                 ->count();
-                
+
             if (DB::getSchemaBuilder()->hasTable('users')) {
                 $data['unverified_users'] = DB::table('users')
                     ->whereNull('email_verified_at')
@@ -455,7 +453,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
         } catch (\Exception $e) {
             // Ignorar errores
         }
-        
+
         return $data;
     }
 
@@ -472,6 +470,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
         $bytes /= pow(1024, $pow);
-        return round($bytes, 2) . ' ' . $units[$pow];
+
+        return round($bytes, 2).' '.$units[$pow];
     }
 }

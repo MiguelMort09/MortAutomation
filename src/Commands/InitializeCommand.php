@@ -21,10 +21,11 @@ class InitializeCommand extends Command
         $this->newLine();
 
         // Verificar si ya está instalado
-        if (!$this->option('force') && $this->isAlreadyInstalled()) {
+        if (! $this->option('force') && $this->isAlreadyInstalled()) {
             $this->warn('⚠️  Mort Automation ya parece estar instalado.');
-            if (!$this->confirm('¿Deseas continuar de todos modos?')) {
+            if (! $this->confirm('¿Deseas continuar de todos modos?')) {
                 $this->info('Operación cancelada.');
+
                 return self::SUCCESS;
             }
         }
@@ -53,9 +54,9 @@ class InitializeCommand extends Command
             $this->info('📚 Ejecuta "php artisan mort:help" para ver todos los comandos disponibles.');
 
             return self::SUCCESS;
-
         } catch (\Exception $e) {
-            $this->error('❌ Error durante la instalación: ' . $e->getMessage());
+            $this->error('❌ Error durante la instalación: '.$e->getMessage());
+
             return self::FAILURE;
         }
     }
@@ -69,9 +70,9 @@ class InitializeCommand extends Command
     private function installComposerDependencies(): void
     {
         $this->info('📦 Instalando dependencias de Composer...');
-        
+
         $command = 'composer install --no-interaction --prefer-dist --optimize-autoloader';
-        
+
         if ($this->option('dev')) {
             $command .= ' --dev';
         } else {
@@ -85,9 +86,10 @@ class InitializeCommand extends Command
     private function installNpmDependencies(): void
     {
         $this->info('📦 Instalando dependencias de NPM...');
-        
-        if (!$this->commandExists('npm')) {
+
+        if (! $this->commandExists('npm')) {
             $this->warn('⚠️  NPM no está disponible, saltando instalación de dependencias de Node.js');
+
             return;
         }
 
@@ -101,7 +103,7 @@ class InitializeCommand extends Command
 
         // Crear archivo de configuración si no existe
         $configPath = config_path('automation.php');
-        if (!file_exists($configPath)) {
+        if (! file_exists($configPath)) {
             $this->executeCommand('php artisan vendor:publish --provider="Mort\\Automation\\AutomationServiceProvider" --tag="config"');
             $this->info('✅ Archivo de configuración creado');
         } else {
@@ -112,24 +114,24 @@ class InitializeCommand extends Command
     private function runMigrations(): void
     {
         $this->info('🗄️  Ejecutando migraciones...');
-        
+
         try {
             $this->executeCommand('php artisan migrate --force');
             $this->info('✅ Migraciones ejecutadas');
         } catch (\Exception $e) {
-            $this->warn('⚠️  No se pudieron ejecutar las migraciones: ' . $e->getMessage());
+            $this->warn('⚠️  No se pudieron ejecutar las migraciones: '.$e->getMessage());
         }
     }
 
     private function publishAssets(): void
     {
         $this->info('📁 Publicando assets...');
-        
+
         try {
             $this->executeCommand('php artisan vendor:publish --provider="Mort\\Automation\\AutomationServiceProvider" --tag="assets" --force');
             $this->info('✅ Assets publicados');
         } catch (\Exception $e) {
-            $this->warn('⚠️  No se pudieron publicar los assets: ' . $e->getMessage());
+            $this->warn('⚠️  No se pudieron publicar los assets: '.$e->getMessage());
         }
     }
 
@@ -138,16 +140,17 @@ class InitializeCommand extends Command
         $this->info('🔍 Verificando instalación...');
 
         $checks = [
-            'Composer autoload' => function() {
+            'Composer autoload' => function () {
                 return class_exists('Mort\Automation\AutomationServiceProvider');
             },
-            'Comandos disponibles' => function() {
+            'Comandos disponibles' => function () {
                 $output = shell_exec('php artisan list | grep mort:');
-                return !empty($output);
+
+                return ! empty($output);
             },
-            'Configuración' => function() {
+            'Configuración' => function () {
                 return file_exists(config_path('automation.php'));
-            }
+            },
         ];
 
         foreach ($checks as $check => $callback) {

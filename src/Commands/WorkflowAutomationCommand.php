@@ -3,14 +3,15 @@
 namespace Mort\Automation\Commands;
 
 use Illuminate\Console\Command;
-use Mort\Automation\Traits\ExecutesCommands;
 use Mort\Automation\Contracts\AutomationInterface;
+use Mort\Automation\Traits\ExecutesCommands;
 
 class WorkflowAutomationCommand extends Command implements AutomationInterface
 {
     use ExecutesCommands;
 
     protected $signature = 'mort:workflow {action} {--name=} {--branch=} {--force}';
+
     protected $description = 'Automatizar workflow completo siguiendo la guía de Mort';
 
     public function handle(): int
@@ -46,13 +47,14 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
     private function startFeature(): int
     {
         $featureName = $this->option('name');
-        
-        if (!$featureName) {
+
+        if (! $featureName) {
             $featureName = $this->ask('¿Nombre de la feature?');
         }
 
-        if (!$featureName) {
+        if (! $featureName) {
             $this->error('❌ Se requiere un nombre para la feature');
+
             return 1;
         }
 
@@ -63,7 +65,7 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             $currentBranch = $this->getCurrentBranch();
             if ($currentBranch !== 'main' && $currentBranch !== 'master') {
                 $this->warn("⚠️  No estás en la rama principal (actual: {$currentBranch})");
-                if (!$this->confirm('¿Continuar?')) {
+                if (! $this->confirm('¿Continuar?')) {
                     return 1;
                 }
             }
@@ -71,13 +73,13 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Crear nueva rama
             $branchName = $this->option('branch') ?? "feature/{$featureName}";
             $this->info("📝 Creando rama: {$branchName}");
-            
+
             $this->executeCommand("git checkout -b {$branchName}");
 
             // Configurar entorno para desarrollo
             $this->info('⚙️  Configurando entorno de desarrollo...');
             $this->executeCommand('composer install');
-            
+
             if ($this->commandExists('npm')) {
                 $this->executeCommand('npm install');
             }
@@ -94,9 +96,9 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             $this->line('  3. Crear Pull Request');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -107,26 +109,28 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
 
         try {
             $currentBranch = $this->getCurrentBranch();
-            
-            if (!str_starts_with($currentBranch, 'feature/')) {
+
+            if (! str_starts_with($currentBranch, 'feature/')) {
                 $this->error('❌ No estás en una rama de feature');
+
                 return 1;
             }
 
             // Ejecutar tests
             $this->info('🧪 Ejecutando tests...');
             $testResult = $this->executeCommand('php artisan test');
-            
-            if (!$testResult->successful()) {
+
+            if (! $testResult->successful()) {
                 $this->error('❌ Los tests fallaron. Corrige los errores antes de continuar.');
+
                 return 1;
             }
 
             // Ejecutar linting
             $this->info('🔍 Ejecutando linting...');
             $lintResult = $this->executeCommand('vendor/bin/pint --test');
-            
-            if (!$lintResult->successful()) {
+
+            if (! $lintResult->successful()) {
                 $this->warn('⚠️  Se encontraron errores de linting');
                 if ($this->confirm('¿Aplicar formato automáticamente?')) {
                     $this->executeCommand('vendor/bin/pint');
@@ -136,7 +140,7 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Formatear código
             $this->info('🎨 Formateando código...');
             $this->executeCommand('vendor/bin/pint');
-            
+
             if ($this->commandExists('npm')) {
                 $this->executeCommand('npm run format');
             }
@@ -144,21 +148,21 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Commit de cambios
             if ($this->confirm('¿Hacer commit de los cambios?')) {
                 $commitMessage = $this->ask('Mensaje de commit (opcional)') ?? 'feat: completar feature';
-                $this->executeCommand("git add .");
+                $this->executeCommand('git add .');
                 $this->executeCommand("git commit -m '{$commitMessage}'");
             }
 
             $this->info("✅ Feature completada en rama '{$currentBranch}'");
             $this->line('');
             $this->info('📋 Próximos pasos:');
-            $this->line('  1. Push de la rama: git push origin ' . $currentBranch);
+            $this->line('  1. Push de la rama: git push origin '.$currentBranch);
             $this->line('  2. Crear Pull Request');
             $this->line('  3. Ejecutar: php artisan mort:workflow deploy-staging');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -170,10 +174,10 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
         try {
             // Verificar que estamos en la rama correcta
             $currentBranch = $this->getCurrentBranch();
-            
+
             if ($currentBranch !== 'staging') {
                 $this->warn("⚠️  No estás en la rama staging (actual: {$currentBranch})");
-                if (!$this->confirm('¿Continuar?')) {
+                if (! $this->confirm('¿Continuar?')) {
                     return 1;
                 }
             }
@@ -181,7 +185,7 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Build para staging
             $this->info('🏗️  Construyendo para staging...');
             $this->executeCommand('composer install --optimize-autoloader');
-            
+
             if ($this->commandExists('npm')) {
                 $this->executeCommand('npm run build');
             }
@@ -198,9 +202,10 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             // Tests en staging
             $this->info('🧪 Ejecutando tests en staging...');
             $testResult = $this->executeCommand('php artisan test');
-            
-            if (!$testResult->successful()) {
+
+            if (! $testResult->successful()) {
                 $this->error('❌ Los tests fallaron en staging');
+
                 return 1;
             }
 
@@ -211,9 +216,9 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             $this->line('  2. Ejecutar: php artisan mort:workflow deploy-production');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -225,22 +230,24 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
         try {
             // Verificar que estamos en la rama correcta
             $currentBranch = $this->getCurrentBranch();
-            
+
             if ($currentBranch !== 'main' && $currentBranch !== 'master') {
                 $this->error('❌ Debes estar en la rama principal para deploy a producción');
+
                 return 1;
             }
 
             // Confirmación final
-            if (!$this->confirm('¿Estás seguro de desplegar a producción?')) {
+            if (! $this->confirm('¿Estás seguro de desplegar a producción?')) {
                 $this->info('Deploy cancelado');
+
                 return 0;
             }
 
             // Build para producción
             $this->info('🏗️  Construyendo para producción...');
             $this->executeCommand('composer install --optimize-autoloader --no-dev');
-            
+
             if ($this->commandExists('npm')) {
                 $this->executeCommand('npm run build');
             }
@@ -262,9 +269,9 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             $this->info('🎉 ¡La aplicación está en producción!');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -276,8 +283,9 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
         try {
             // 1. Iniciar feature
             $featureName = $this->ask('¿Nombre de la feature?');
-            if (!$featureName) {
+            if (! $featureName) {
                 $this->error('❌ Se requiere un nombre para la feature');
+
                 return 1;
             }
 
@@ -299,10 +307,11 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             }
 
             $this->info('✅ Ciclo completo ejecutado');
-            return 0;
 
+            return 0;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -314,14 +323,15 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
         try {
             // Crear rama de hotfix
             $hotfixName = $this->ask('¿Nombre del hotfix?');
-            if (!$hotfixName) {
+            if (! $hotfixName) {
                 $this->error('❌ Se requiere un nombre para el hotfix');
+
                 return 1;
             }
 
             $branchName = "hotfix/{$hotfixName}";
             $this->info("📝 Creando rama de hotfix: {$branchName}");
-            
+
             $this->executeCommand("git checkout -b {$branchName}");
 
             $this->info("✅ Hotfix '{$hotfixName}' iniciado en rama '{$branchName}'");
@@ -333,9 +343,9 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
             $this->line('  4. Merge rápido a producción');
 
             return 0;
-
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
+
             return 1;
         }
     }
@@ -343,6 +353,7 @@ class WorkflowAutomationCommand extends Command implements AutomationInterface
     private function getCurrentBranch(): string
     {
         $result = $this->executeCommand('git branch --show-current');
+
         return trim($result->output());
     }
 }

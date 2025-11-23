@@ -28,7 +28,7 @@ return [
             'auto_install_dependencies' => true,
             'run_tests_after_changes' => true,
         ],
-        
+
         'monitoring' => [
             'enabled' => true,
             'check_interval' => 300, // segundos
@@ -60,17 +60,17 @@ return [
             'enabled' => true,
             'auto_configure' => true,
         ],
-        
+
         'context7' => [
             'enabled' => true,
             'auto_configure' => true,
         ],
-        
+
         'github' => [
             'enabled' => true,
             'auto_configure' => true,
         ],
-        
+
         'stripe' => [
             'enabled' => true,
             'auto_configure' => true,
