@@ -193,11 +193,11 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
                 $this->info("❌ Pagos fallidos: {$failedPayments}");
 
                 // Ingresos
-                $totalRevenue = DB::table('payments')->where('status', 0)->sum('total') ?? 0;
-                $monthlyRevenue = DB::table('payments')
+                $totalRevenue = (int) DB::table('payments')->where('status', 0)->sum('total');
+                $monthlyRevenue = (int) DB::table('payments')
                     ->where('status', 0)
                     ->whereMonth('created_at', now()->month)
-                    ->sum('total') ?? 0;
+                    ->sum('total');
 
                 $this->info('💰 Ingresos totales: $'.number_format($totalRevenue / 100, 2));
                 $this->info('💰 Ingresos del mes: $'.number_format($monthlyRevenue / 100, 2));
@@ -417,7 +417,7 @@ class SystemMonitoringCommand extends Command implements AutomationInterface
             if (DB::getSchemaBuilder()->hasTable('payments')) {
                 $data['total_payments'] = DB::table('payments')->count();
                 $data['successful_payments'] = DB::table('payments')->where('status', 0)->count();
-                $data['total_revenue'] = DB::table('payments')->where('status', 0)->sum('total') ?? 0;
+                $data['total_revenue'] = (int) DB::table('payments')->where('status', 0)->sum('total');
             }
         } catch (\Exception $e) {
             // Ignorar errores

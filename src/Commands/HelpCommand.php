@@ -73,7 +73,7 @@ class HelpCommand extends Command
         foreach ($commands as $command => $info) {
             $this->line("  <fg=green>{$command}</>");
             $this->line("    {$info['description']}");
-            if (! empty($info['options'])) {
+            if (isset($info['options'])) {
                 $this->line('    <fg=yellow>Opciones:</> '.implode(', ', $info['options']));
             }
             $this->line("    <fg=blue>Ejemplo:</> {$info['example']}");
