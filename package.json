@@ -1,0 +1,29 @@
+{
+  "name": "mort/automation",
+  "version": "1.4.0",
+  "description": "Laravel package for Mort's development automation commands",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "laravel",
+    "automation",
+    "development",
+    "workflow",
+    "monitoring",
+    "stripe",
+    "github",
+    "mcp"
+  ],
+  "author": "Mort",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mort/automation.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mort/automation/issues"
+  },
+  "homepage": "https://github.com/mort/automation#readme"
+}

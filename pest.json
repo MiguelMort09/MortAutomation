@@ -1,0 +1,8 @@
+{
+    "plugins": [
+        "pestphp/pest-plugin-laravel"
+    ],
+    "cache": {
+        "directory": ".pest"
+    }
+}

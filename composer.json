@@ -1,0 +1,62 @@
+{
+    "name": "mort/automation",
+    "description": "Package de automatización para desarrollo de aplicaciones con Laravel.",
+    "keywords": [
+        "laravel",
+        "automation",
+        "package"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mort",
+            "email": "miguelmort9@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^12.0",
+        "stripe/stripe-php": "^14.0|^15.0|^16.0",
+        "symfony/process": "^6.0|^7.0"
+    },
+    "require-dev": {
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.0",
+        "orchestra/testbench": "^10.6",
+        "laravel/pint": "^1.0",
+        "phpstan/phpstan": "^2.0",
+        "larastan/larastan": "^3.0"
+    },
+    "scripts": {
+        "test": "pest --cache-directory=.pest",
+        "test-coverage": "pest --coverage --cache-directory=.pest",
+        "check-style": "pint --test",
+        "fix-style": "pint",
+        "analyse": "phpstan analyse"
+    },
+    "autoload": {
+        "psr-4": {
+            "Mort\\Automation\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Mort\\Automation\\AutomationServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
