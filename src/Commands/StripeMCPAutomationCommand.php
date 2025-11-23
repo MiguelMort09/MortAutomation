@@ -288,25 +288,70 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function createPriceForProduct(string $productId): void
     {
         $this->info('💰 Creando precio para el producto...');
+        $this->newLine();
 
-        $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
-        $currency = $this->getOptionOrAsk('currency', 'Moneda (ej: usd, eur, mxn)', 'usd');
-
-        // Para intervalo, si viene por opción lo usamos, si no preguntamos
+        // Determinar si es producto único o suscripción
         $interval = $this->option('interval');
         $isRecurring = false;
 
         if ($interval) {
+            // Si se pasó --interval por CLI, es suscripción
             $isRecurring = true;
         } elseif (! $this->option('amount')) {
-            // Solo preguntamos si estamos en flujo interactivo (no se pasó amount por cli)
-            $isRecurring = $this->confirm('¿Es un precio recurrente (suscripción)?', false);
+            // Solo preguntamos si estamos en flujo interactivo
+            $productType = $this->choice(
+                '¿Qué tipo de producto es?',
+                [
+                    'one-time' => '💳 Pago único (producto/servicio)',
+                    'subscription' => '🔄 Suscripción (recurrente)',
+                ],
+                'one-time'
+            );
+
+            $isRecurring = ($productType === '🔄 Suscripción (recurrente)' || $productType === 'subscription');
         }
+
+        // Solicitar monto
+        $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
 
         if (! $amount) {
             $this->error('❌ El monto es requerido');
 
             return;
+        }
+
+        // Solicitar moneda con opciones comunes
+        $currency = $this->option('currency');
+        if (! $currency && ! $this->option('amount')) {
+            $currency = $this->choice(
+                'Moneda',
+                [
+                    'usd' => '💵 USD (Dólar estadounidense)',
+                    'mxn' => '🇲🇽 MXN (Peso mexicano)',
+                    'eur' => '💶 EUR (Euro)',
+                    'gbp' => '💷 GBP (Libra esterlina)',
+                    'cad' => '🇨🇦 CAD (Dólar canadiense)',
+                    'other' => '🌍 Otra moneda',
+                ],
+                'usd'
+            );
+
+            // Si eligió "otra", pedir código manualmente
+            if ($currency === '🌍 Otra moneda' || $currency === 'other') {
+                $currency = $this->ask('Código de moneda (ej: jpy, brl, ars)', 'usd');
+            } else {
+                // Extraer el código (ej: de "💵 USD (Dólar estadounidense)" a "usd")
+                $currencyMap = [
+                    '💵 USD (Dólar estadounidense)' => 'usd',
+                    '🇲🇽 MXN (Peso mexicano)' => 'mxn',
+                    '💶 EUR (Euro)' => 'eur',
+                    '💷 GBP (Libra esterlina)' => 'gbp',
+                    '🇨🇦 CAD (Dólar canadiense)' => 'cad',
+                ];
+                $currency = $currencyMap[$currency] ?? $currency;
+            }
+        } elseif (! $currency) {
+            $currency = 'usd';
         }
 
         $priceData = [
@@ -315,10 +360,30 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             'currency' => $currency,
         ];
 
+        // Si es recurrente, solicitar intervalo
         if ($isRecurring) {
             if (! $interval) {
-                $interval = $this->choice('Intervalo de recurrencia', ['day', 'week', 'month', 'year'], 'month');
+                $interval = $this->choice(
+                    'Intervalo de recurrencia',
+                    [
+                        'month' => '📅 Mensual',
+                        'year' => '📆 Anual',
+                        'week' => '📅 Semanal',
+                        'day' => '📅 Diario',
+                    ],
+                    'month'
+                );
+
+                // Extraer el código
+                $intervalMap = [
+                    '📅 Mensual' => 'month',
+                    '📆 Anual' => 'year',
+                    '📅 Semanal' => 'week',
+                    '📅 Diario' => 'day',
+                ];
+                $interval = $intervalMap[$interval] ?? $interval;
             }
+
             $priceData['recurring'] = ['interval' => $interval];
         }
 
@@ -328,9 +393,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->newLine();
             $this->info('✅ Precio creado exitosamente');
             $this->line("  🆔 ID: {$price['id']}");
-            $this->line("  💰 Monto: {$price['amount']} {$price['currency']}");
+            $this->line("  💰 Monto: $".number_format($price['amount'] / 100, 2)." {$price['currency']}");
             if ($price['recurring']) {
                 $this->line("  🔄 Recurrencia: {$price['recurring']['interval']}");
+            } else {
+                $this->line('  💳 Tipo: Pago único');
             }
 
             $this->newLine();
@@ -359,22 +426,71 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->info('📝 Ingresa los datos del precio:');
 
             $product = $this->getOptionOrAsk('product', 'ID del producto');
-            $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
-            $currency = $this->getOptionOrAsk('currency', 'Moneda (ej: usd, eur)', 'usd');
 
+            if (! $product) {
+                $this->error('❌ El ID del producto es requerido');
+
+                return 1;
+            }
+
+            // Determinar si es producto único o suscripción
             $interval = $this->option('interval');
             $isRecurring = false;
 
             if ($interval) {
                 $isRecurring = true;
             } elseif (! $this->option('amount')) {
-                $isRecurring = $this->confirm('¿Es un precio recurrente (suscripción)?', false);
+                $productType = $this->choice(
+                    '¿Qué tipo de producto es?',
+                    [
+                        'one-time' => '💳 Pago único (producto/servicio)',
+                        'subscription' => '🔄 Suscripción (recurrente)',
+                    ],
+                    'one-time'
+                );
+
+                $isRecurring = ($productType === '🔄 Suscripción (recurrente)' || $productType === 'subscription');
             }
 
-            if (! $product || ! $amount) {
-                $this->error('❌ Producto y monto son requeridos');
+            // Solicitar monto
+            $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
+
+            if (! $amount) {
+                $this->error('❌ El monto es requerido');
 
                 return 1;
+            }
+
+            // Solicitar moneda con opciones comunes
+            $currency = $this->option('currency');
+            if (! $currency && ! $this->option('amount')) {
+                $currency = $this->choice(
+                    'Moneda',
+                    [
+                        'usd' => '💵 USD (Dólar estadounidense)',
+                        'mxn' => '🇲🇽 MXN (Peso mexicano)',
+                        'eur' => '💶 EUR (Euro)',
+                        'gbp' => '💷 GBP (Libra esterlina)',
+                        'cad' => '🇨🇦 CAD (Dólar canadiense)',
+                        'other' => '🌍 Otra moneda',
+                    ],
+                    'usd'
+                );
+
+                if ($currency === '🌍 Otra moneda' || $currency === 'other') {
+                    $currency = $this->ask('Código de moneda (ej: jpy, brl, ars)', 'usd');
+                } else {
+                    $currencyMap = [
+                        '💵 USD (Dólar estadounidense)' => 'usd',
+                        '🇲🇽 MXN (Peso mexicano)' => 'mxn',
+                        '💶 EUR (Euro)' => 'eur',
+                        '💷 GBP (Libra esterlina)' => 'gbp',
+                        '🇨🇦 CAD (Dólar canadiense)' => 'cad',
+                    ];
+                    $currency = $currencyMap[$currency] ?? $currency;
+                }
+            } elseif (! $currency) {
+                $currency = 'usd';
             }
 
             $priceData = [
@@ -383,10 +499,29 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                 'currency' => $currency,
             ];
 
+            // Si es recurrente, solicitar intervalo
             if ($isRecurring) {
                 if (! $interval) {
-                    $interval = $this->choice('Intervalo de recurrencia', ['day', 'week', 'month', 'year'], 'month');
+                    $interval = $this->choice(
+                        'Intervalo de recurrencia',
+                        [
+                            'month' => '📅 Mensual',
+                            'year' => '📆 Anual',
+                            'week' => '📅 Semanal',
+                            'day' => '📅 Diario',
+                        ],
+                        'month'
+                    );
+
+                    $intervalMap = [
+                        '📅 Mensual' => 'month',
+                        '📆 Anual' => 'year',
+                        '📅 Semanal' => 'week',
+                        '📅 Diario' => 'day',
+                    ];
+                    $interval = $intervalMap[$interval] ?? $interval;
                 }
+
                 $priceData['recurring'] = ['interval' => $interval];
             }
 
@@ -399,9 +534,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->info('✅ Precio creado exitosamente en Stripe');
             $this->line("  🆔 ID: {$price['id']}");
             $this->line("  📦 Producto: {$price['product']}");
-            $this->line("  💰 Monto: {$price['amount']} {$price['currency']}");
+            $this->line("  💰 Monto: $".number_format($price['amount'] / 100, 2)." {$price['currency']}");
             if ($price['recurring']) {
                 $this->line("  🔄 Recurrencia: {$price['recurring']['interval']}");
+            } else {
+                $this->line('  💳 Tipo: Pago único');
             }
 
             $this->newLine();

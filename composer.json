@@ -1,7 +1,7 @@
 {
     "name": "mort/automation",
     "description": "Package de automatización para desarrollo de aplicaciones con Laravel.",
-    "version": "1.2.6",
+    "version": "1.3.0",
     "keywords": [
         "laravel",
         "automation",

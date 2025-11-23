@@ -51,6 +51,16 @@ Esta versión implementa la integración completa con el SDK de Stripe, permitie
 - Ejemplos de uso para cada comando
 - Instrucciones de configuración actualizadas
 
+# Release 1.3.0
+
+## ✨ Features
+- **Improved Product/Price Creation**: Enhanced UX for creating products and prices with:
+  - Clear distinction between one-time products and subscriptions
+  - Currency selector with common options (USD, MXN, EUR, GBP, CAD) and custom input
+  - Better interval selection for subscriptions (monthly, yearly, weekly, daily)
+  - Formatted price display ($29.99 instead of 2999 cents)
+  - Product type indicator in output
+
 # Release 1.2.6
 
 ## 🐛 Fixes
