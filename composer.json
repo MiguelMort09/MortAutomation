@@ -1,3 +1,13 @@
+{
+    "name": "mort/automation",
+    "description": "Package de automatización para desarrollo de aplicaciones con Laravel.",
+    "version": "1.2.3",
+    "keywords": [
+        "laravel",
+        "automation",
+        "package"
+    ],
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
