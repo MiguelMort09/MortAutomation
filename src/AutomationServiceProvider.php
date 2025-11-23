@@ -9,6 +9,7 @@ use Mort\Automation\Commands\MCPAutomationCommand;
 use Mort\Automation\Commands\StripeMCPAutomationCommand;
 use Mort\Automation\Commands\SystemMonitoringCommand;
 use Mort\Automation\Commands\InitializeCommand;
+use Mort\Automation\Commands\ReleaseCommand;
 use Mort\Automation\Commands\HelpCommand;
 
 class AutomationServiceProvider extends ServiceProvider
@@ -41,6 +42,7 @@ class AutomationServiceProvider extends ServiceProvider
                 MCPAutomationCommand::class,
                 StripeMCPAutomationCommand::class,
                 SystemMonitoringCommand::class,
+                ReleaseCommand::class,
             ]);
         }
     }
