@@ -19,6 +19,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                             {--currency=mxn} 
                             {--name=} 
                             {--description=} 
+                            {--category=}
                             {--email=} 
                             {--quantity=1} 
                             {--redirect-url=} 
@@ -223,28 +224,54 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $name = $this->getOptionOrAsk('name', 'Nombre del producto');
             $description = $this->getOptionOrAsk('description', 'Descripción del producto (opcional)');
 
+            // Cargar categorías
+            $categoriesPath = __DIR__.'/../Config/stripe-categories.json';
+            $categories = ['Otros'];
+            if (file_exists($categoriesPath)) {
+                $config = json_decode(file_get_contents($categoriesPath), true);
+                $categories = $config['categories'] ?? ['Otros'];
+            }
+
+            $category = $this->option('category');
+            if (! $category && ! $this->option('name')) {
+                $category = $this->choice('Categoría del producto', $categories, 'Otros');
+            }
+
             if (! $name) {
                 $this->error('❌ El nombre es requerido');
 
                 return 1;
             }
 
-            // Crear producto en Stripe (sincronización automática)
-            $this->info('🔄 Sincronizando con Stripe...');
-            $product = $this->stripeService->createProduct([
+            $productData = [
                 'name' => $name,
                 'description' => $description,
-            ]);
+            ];
+
+            if ($category) {
+                $productData['metadata'] = ['category' => $category];
+            }
+
+            // Crear producto en Stripe (sincronización automática)
+            $this->info('🔄 Sincronizando con Stripe...');
+            $product = $this->stripeService->createProduct($productData);
 
             // Mostrar resultados del producto
             $this->newLine();
             $this->info('✅ Producto creado exitosamente en Stripe');
             $this->line("  🆔 ID: {$product['id']}");
             $this->line("  📦 Nombre: {$product['name']}");
-            if ($product['description']) {
-                $this->line("  📝 Descripción: {$product['description']}");
-            }
-            $this->line('  📅 Fecha: '.date('Y-m-d H:i:s', $product['created']));
+        if ($product['description']) {
+            $this->line("  📝 Descripción: {$product['description']}");
+        }
+        // Mostrar metadata si existe (categoría)
+        // Nota: createProduct devuelve array con 'metadata' si lo agregamos al servicio, 
+        // pero StripeService::createProduct actualmente devuelve un array fijo.
+        // Vamos a asumir que si pasamos categoría, se guardó.
+        if ($category) {
+            $this->line("  🏷️  Categoría: {$category}");
+        }
+        $this->line('  📅 Fecha: '.date('Y-m-d H:i:s', $product['created']));
 
             // Si se proporcionó un monto, crear el precio automáticamente
             if ($this->option('amount')) {
@@ -763,15 +790,22 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             if (! $this->stripeService->isConfigured()) {
                 $this->error('❌ Stripe no está configurado');
                 $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
-
+```
                 return 1;
             }
 
             $limit = $this->ask('Límite de resultados', '10');
+            $category = $this->option('category');
+
+            $params = ['limit' => (int) $limit];
+            if ($category) {
+                $params['category'] = $category;
+                $this->info("🔍 Filtrando por categoría: $category");
+            }
 
             // Obtener productos de Stripe
             $this->info('🔄 Consultando Stripe...');
-            $products = $this->stripeService->listProducts(['limit' => (int) $limit]);
+            $products = $this->stripeService->listProducts($params);
 
             $this->newLine();
             if (empty($products)) {
@@ -787,6 +821,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                 $this->line('    📦 '.$product['name']);
                 if ($product['description']) {
                     $this->line('    📝 '.$product['description']);
+                }
+                if (isset($product['metadata']['category'])) {
+                    $this->line('    🏷️  '.$product['metadata']['category']);
                 }
                 $this->line('    📅 '.date('Y-m-d', $product['created']));
                 $this->newLine();

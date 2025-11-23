@@ -51,6 +51,15 @@ Esta versión implementa la integración completa con el SDK de Stripe, permitie
 - Ejemplos de uso para cada comando
 - Instrucciones de configuración actualizadas
 
+# Release 1.4.0
+
+## ✨ Features
+- **Product Categories**: Added support for categorizing products using Stripe Metadata.
+  - New `--category` option in `create-product` and `list-products`.
+  - Configurable categories via `src/Config/stripe-categories.json`.
+  - Uses Stripe Search API for filtering products by category.
+  - Displays category in product details.
+
 # Release 1.3.2
 
 ## ✨ Features

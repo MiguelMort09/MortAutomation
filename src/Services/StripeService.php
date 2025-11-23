@@ -89,6 +89,7 @@ class StripeService
             'id' => $product->id,
             'name' => $product->name,
             'description' => $product->description,
+            'metadata' => $product->metadata->toArray(),
             'created' => $product->created,
         ];
     }
@@ -221,17 +222,31 @@ class StripeService
             throw new \RuntimeException('Stripe no está configurado. Ejecuta: php artisan mort:stripe setup');
         }
 
-        $queryParams = [
-            'limit' => $params['limit'] ?? 10,
-        ];
+        $limit = $params['limit'] ?? 10;
 
-        $products = $this->stripe->products->all($queryParams);
+        if (isset($params['category'])) {
+            // Usar Search API para filtrar por metadata
+            $category = $params['category'];
+            $query = "metadata['category']:'$category'";
+            
+            $products = $this->stripe->products->search([
+                'query' => $query,
+                'limit' => $limit,
+            ]);
+        } else {
+            // Usar List API estándar
+            $queryParams = [
+                'limit' => $limit,
+            ];
+            $products = $this->stripe->products->all($queryParams);
+        }
 
         return array_map(function ($product) {
             return [
                 'id' => $product->id,
                 'name' => $product->name,
                 'description' => $product->description,
+                'metadata' => $product->metadata->toArray(),
                 'created' => $product->created,
             ];
         }, $products->data);
