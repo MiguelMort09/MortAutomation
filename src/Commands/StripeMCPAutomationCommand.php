@@ -297,8 +297,8 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
         if ($interval) {
             // Si se pasó --interval por CLI, es suscripción
             $isRecurring = true;
-        } elseif (! $this->option('amount')) {
-            // Solo preguntamos si estamos en flujo interactivo
+        } else {
+            // Preguntar tipo de producto
             $productType = $this->choice(
                 '¿Qué tipo de producto es?',
                 [
@@ -322,7 +322,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
         // Solicitar moneda con opciones comunes
         $currency = $this->option('currency');
-        if (! $currency && ! $this->option('amount')) {
+        if (! $currency) {
             $currency = $this->choice(
                 'Moneda',
                 [
@@ -350,8 +350,6 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                 ];
                 $currency = $currencyMap[$currency] ?? $currency;
             }
-        } elseif (! $currency) {
-            $currency = 'usd';
         }
 
         $priceData = [

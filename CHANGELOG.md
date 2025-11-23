@@ -51,6 +51,11 @@ Esta versión implementa la integración completa con el SDK de Stripe, permitie
 - Ejemplos de uso para cada comando
 - Instrucciones de configuración actualizadas
 
+# Release 1.3.1
+
+## 🐛 Fixes
+- **Interactive Prompts**: Fixed issue where product type and currency prompts were not showing in interactive mode when creating prices.
+
 # Release 1.3.0
 
 ## ✨ Features
