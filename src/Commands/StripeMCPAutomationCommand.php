@@ -393,7 +393,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->newLine();
             $this->info('✅ Precio creado exitosamente');
             $this->line("  🆔 ID: {$price['id']}");
-            $this->line("  💰 Monto: $".number_format($price['amount'] / 100, 2)." {$price['currency']}");
+            $this->line('  💰 Monto: $'.number_format($price['amount'] / 100, 2)." {$price['currency']}");
             if ($price['recurring']) {
                 $this->line("  🔄 Recurrencia: {$price['recurring']['interval']}");
             } else {
@@ -534,7 +534,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->info('✅ Precio creado exitosamente en Stripe');
             $this->line("  🆔 ID: {$price['id']}");
             $this->line("  📦 Producto: {$price['product']}");
-            $this->line("  💰 Monto: $".number_format($price['amount'] / 100, 2)." {$price['currency']}");
+            $this->line('  💰 Monto: $'.number_format($price['amount'] / 100, 2)." {$price['currency']}");
             if ($price['recurring']) {
                 $this->line("  🔄 Recurrencia: {$price['recurring']['interval']}");
             } else {
