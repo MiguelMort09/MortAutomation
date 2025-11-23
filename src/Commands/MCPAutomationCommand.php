@@ -69,7 +69,7 @@ class MCPAutomationCommand extends Command implements AutomationInterface
         $this->info('💡 Acciones disponibles:');
         $this->line('  search-docs, get-library-docs, stripe-operations,');
         $this->line('  github-operations, laravel-boost, mcp-status');
-        
+
         return 1;
     }
 

@@ -38,17 +38,17 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function getOptionOrAsk(string $option, string $question, ?string $default = null): ?string
     {
         $value = $this->option($option);
-        
+
         if ($value) {
             return $value;
         }
 
-        // If running in non-interactive mode (e.g. from LLM) and option is missing, 
+        // If running in non-interactive mode (e.g. from LLM) and option is missing,
         // we might want to return default or null instead of blocking.
         // However, 'ask' will still block if input is expected.
         // For now, we assume if an LLM calls this, it should provide args.
         // If it didn't, we fall back to interactive ask.
-        
+
         return $this->ask($question, $default);
     }
 
@@ -141,7 +141,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del cliente
             $this->info('📝 Ingresa los datos del cliente:');
-            
+
             $name = $this->getOptionOrAsk('name', 'Nombre del cliente');
             $email = $this->getOptionOrAsk('email', 'Email del cliente (opcional)');
             $description = $this->getOptionOrAsk('description', 'Descripción (opcional)');
@@ -204,7 +204,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del producto
             $this->info('📝 Ingresa los datos del producto:');
-            
+
             $name = $this->getOptionOrAsk('name', 'Nombre del producto');
             $description = $this->getOptionOrAsk('description', 'Descripción del producto (opcional)');
 
@@ -234,7 +234,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             // Si se proporcionó un monto, crear el precio automáticamente
             if ($this->option('amount')) {
                 $this->createPriceForProduct($product['id']);
-            } 
+            }
             // Si no hay monto y no estamos en modo interactivo forzado (por ejemplo, si se pasó el nombre por argumento),
             // asumimos que es una operación atómica de solo crear producto, a menos que el usuario esté en consola interactiva.
             // Pero para mantener la UX anterior, preguntamos si no se pasó el nombre (asumiendo flujo interactivo).
@@ -273,23 +273,24 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function createPriceForProduct(string $productId): void
     {
         $this->info('💰 Creando precio para el producto...');
-        
+
         $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
         $currency = $this->getOptionOrAsk('currency', 'Moneda (ej: usd, eur, mxn)', 'usd');
-        
+
         // Para intervalo, si viene por opción lo usamos, si no preguntamos
         $interval = $this->option('interval');
         $isRecurring = false;
 
         if ($interval) {
             $isRecurring = true;
-        } elseif (! $this->option('amount')) { 
+        } elseif (! $this->option('amount')) {
             // Solo preguntamos si estamos en flujo interactivo (no se pasó amount por cli)
             $isRecurring = $this->confirm('¿Es un precio recurrente (suscripción)?', false);
         }
 
         if (! $amount) {
             $this->error('❌ El monto es requerido');
+
             return;
         }
 
@@ -341,11 +342,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del precio
             $this->info('📝 Ingresa los datos del precio:');
-            
+
             $product = $this->getOptionOrAsk('product', 'ID del producto');
             $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
             $currency = $this->getOptionOrAsk('currency', 'Moneda (ej: usd, eur)', 'usd');
-            
+
             $interval = $this->option('interval');
             $isRecurring = false;
 
@@ -422,7 +423,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del payment link
             $this->info('📝 Ingresa los datos del payment link:');
-            
+
             $price = $this->getOptionOrAsk('price', 'ID del precio');
             $quantity = $this->getOptionOrAsk('quantity', 'Cantidad', '1');
             $redirectUrl = $this->getOptionOrAsk('redirect-url', 'URL de redirección después del pago (opcional)');

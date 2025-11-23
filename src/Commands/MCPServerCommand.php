@@ -41,7 +41,7 @@ class MCPServerCommand extends Command
                 $request = json_decode($line, true, 512, JSON_THROW_ON_ERROR);
                 $this->handleRequest($request);
             } catch (Throwable $e) {
-                $this->sendError(null, -32700, 'Parse error: ' . $e->getMessage());
+                $this->sendError(null, -32700, 'Parse error: '.$e->getMessage());
             }
         }
 
@@ -206,7 +206,7 @@ class MCPServerCommand extends Command
                 'content' => [
                     [
                         'type' => 'text',
-                        'text' => "Error: " . $e->getMessage(),
+                        'text' => 'Error: '.$e->getMessage(),
                     ],
                 ],
                 'isError' => true,
@@ -274,7 +274,7 @@ class MCPServerCommand extends Command
     private function sendJson(array $data): void
     {
         // Write to stdout directly
-        fwrite(STDOUT, json_encode($data) . "\n");
+        fwrite(STDOUT, json_encode($data)."\n");
         fflush(STDOUT);
     }
 }
