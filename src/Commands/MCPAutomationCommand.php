@@ -69,13 +69,28 @@ class MCPAutomationCommand extends Command implements AutomationInterface
             'mcp-status'
         );
 
-        if ($choice === 'exit') {
+        // Si el usuario selecciona "Salir"
+        if ($choice === '🚪 Salir' || $choice === 'exit') {
             return 0;
         }
 
+        // Intentar encontrar la acción basada en la descripción (valor)
         $action = array_search($choice, $options);
 
-        return $this->call('mort:mcp', ['action' => $action]);
+        // Si no se encuentra (quizás el usuario escribió la clave directamente), usar el input tal cual
+        if ($action === false) {
+            $action = $choice;
+        }
+
+        return match ($action) {
+            'search-docs' => $this->searchDocs(),
+            'get-library-docs' => $this->getLibraryDocs(),
+            'stripe-operations' => $this->stripeOperations(),
+            'github-operations' => $this->githubOperations(),
+            'laravel-boost' => $this->laravelBoost(),
+            'mcp-status' => $this->mcpStatus(),
+            default => $this->showInvalidAction()
+        };
     }
 
     private function showInvalidAction(): int
