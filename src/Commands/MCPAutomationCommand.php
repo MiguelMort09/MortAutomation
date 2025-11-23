@@ -10,13 +10,17 @@ class MCPAutomationCommand extends Command implements AutomationInterface
 {
     use ExecutesCommands;
 
-    protected $signature = 'mort:mcp {action} {--query=} {--package=} {--limit=10}';
+    protected $signature = 'mort:mcp {action?} {--query=} {--package=} {--limit=10}';
 
-    protected $description = 'Automatizar operaciones usando MCP siguiendo la guía de Mort';
+    protected $description = 'Verificar estado y documentación de MCPs disponibles';
 
     public function handle(): int
     {
         $action = $this->argument('action');
+
+        if (! $action) {
+            return $this->showInteractiveMenu();
+        }
 
         return match ($action) {
             'search-docs' => $this->searchDocs(),
@@ -25,23 +29,48 @@ class MCPAutomationCommand extends Command implements AutomationInterface
             'github-operations' => $this->githubOperations(),
             'laravel-boost' => $this->laravelBoost(),
             'mcp-status' => $this->mcpStatus(),
-            default => $this->error('Acción no válida. Use: search-docs, get-library-docs, stripe-operations, github-operations, laravel-boost, mcp-status')
+            default => $this->showInvalidAction()
         };
     }
 
-    public function executeAutomation(): int
+    private function showInteractiveMenu(): int
     {
-        return $this->handle();
+        $this->info('🤖 Mort MCP Status & Docs');
+        $this->newLine();
+
+        $options = [
+            'mcp-status' => '📊 Ver estado de MCPs',
+            'stripe-operations' => '💳 Ver operaciones de Stripe',
+            'github-operations' => '🐙 Ver operaciones de GitHub',
+            'laravel-boost' => '🚀 Ver operaciones de Laravel Boost',
+            'search-docs' => '🔍 Buscar documentación',
+            'get-library-docs' => '📚 Ver docs de librería',
+            'exit' => '🚪 Salir',
+        ];
+
+        $choice = $this->choice(
+            '¿Qué deseas consultar?',
+            $options,
+            'mcp-status'
+        );
+
+        if ($choice === 'exit') {
+            return 0;
+        }
+
+        $action = array_search($choice, $options);
+
+        return $this->call('mort:mcp', ['action' => $action]);
     }
 
-    public function isAvailable(): bool
+    private function showInvalidAction(): int
     {
-        return true; // Siempre disponible
-    }
-
-    public function getDescription(): string
-    {
-        return 'Automatización de operaciones usando MCP siguiendo la guía de Mort';
+        $this->error('❌ Acción no válida');
+        $this->info('💡 Acciones disponibles:');
+        $this->line('  search-docs, get-library-docs, stripe-operations,');
+        $this->line('  github-operations, laravel-boost, mcp-status');
+        
+        return 1;
     }
 
     private function searchDocs(): int
