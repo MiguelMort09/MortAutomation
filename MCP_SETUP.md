@@ -28,7 +28,7 @@ Agrega el siguiente bloque al archivo JSON. Asegúrate de ajustar la ruta `cwd` 
         "artisan",
         "mort:mcp-server"
       ],
-      "cwd": "C:\\Users\\mortm\\Herd\\MortAutomation", 
+      "cwd": "C:\\Users\\mortm\\Herd\\gym-sas", 
       "env": {
         "APP_ENV": "local"
       }
@@ -36,7 +36,7 @@ Agrega el siguiente bloque al archivo JSON. Asegúrate de ajustar la ruta `cwd` 
   }
 }
 ```
-> **Nota**: Si ya tienes otros servidores MCP configurados, solo agrega la clave `"mort-automation"` dentro de `"mcpServers"`.
+> **IMPORTANTE**: La ruta `cwd` debe apuntar a la carpeta raíz de tu **PROYECTO LARAVEL** (donde está el archivo `artisan`), **NO** a la carpeta del paquete `MortAutomation`.
 
 ### Paso 3: Reiniciar Claude
 Cierra completamente Claude Desktop y vuélvelo a abrir. Deberías ver un icono de enchufe 🔌 (o similar) indicando que las herramientas están conectadas.
