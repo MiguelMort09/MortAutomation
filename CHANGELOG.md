@@ -51,13 +51,19 @@ Esta versión implementa la integración completa con el SDK de Stripe, permitie
 - Ejemplos de uso para cada comando
 - Instrucciones de configuración actualizadas
 
+## [1.2.5] - 2025-01-27
 
-## [1.4.0] - 2025-01-27
+### 🐛 Fixes
+- **Critical**: Fixed corrupted `composer.json` file that prevented installation.
+
+## [1.2.4] - 2025-01-27
 
 ### 🎉 Release Estable Final
 - **Versión estable y completamente funcional**
 - **Package probado e instalado exitosamente en proyectos reales**
 - **Todos los problemas resueltos y funcionalidades verificadas**
+
+## [1.4.0] - 2025-01-27
 
 ### ✅ Verificado y Funcionando
 - Package instalado correctamente en proyecto gym-sas
