@@ -16,13 +16,13 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                             {--product=} 
                             {--price=} 
                             {--amount=} 
-                            {--currency=usd} 
+                            {--currency=mxn} 
                             {--name=} 
                             {--description=} 
                             {--email=} 
                             {--quantity=1} 
                             {--redirect-url=} 
-                            {--interval=month} 
+                            {--interval=none} 
                             {--force}';
 
     protected $description = 'Automatizar operaciones de Stripe. Acciones: setup, create-customer, create-product, create-price, create-payment-link, list-customers, list-products, list-prices';
@@ -294,8 +294,8 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
         $interval = $this->option('interval');
         $isRecurring = false;
 
-        if ($interval) {
-            // Si se pasó --interval por CLI, es suscripción
+        if ($interval && $interval !== 'none') {
+            // Si se pasó --interval por CLI (y no es 'none'), es suscripción
             $isRecurring = true;
         } else {
             // Preguntar tipo de producto
@@ -326,24 +326,24 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $currency = $this->choice(
                 'Moneda',
                 [
-                    'usd' => '💵 USD (Dólar estadounidense)',
                     'mxn' => '🇲🇽 MXN (Peso mexicano)',
+                    'usd' => '💵 USD (Dólar estadounidense)',
                     'eur' => '💶 EUR (Euro)',
                     'gbp' => '💷 GBP (Libra esterlina)',
                     'cad' => '🇨🇦 CAD (Dólar canadiense)',
                     'other' => '🌍 Otra moneda',
                 ],
-                'usd'
+                'mxn'
             );
 
             // Si eligió "otra", pedir código manualmente
             if ($currency === '🌍 Otra moneda' || $currency === 'other') {
                 $currency = $this->ask('Código de moneda (ej: jpy, brl, ars)', 'usd');
             } else {
-                // Extraer el código (ej: de "💵 USD (Dólar estadounidense)" a "usd")
+                // Extraer el código (ej: de "🇲🇽 MXN (Peso mexicano)" a "mxn")
                 $currencyMap = [
-                    '💵 USD (Dólar estadounidense)' => 'usd',
                     '🇲🇽 MXN (Peso mexicano)' => 'mxn',
+                    '💵 USD (Dólar estadounidense)' => 'usd',
                     '💶 EUR (Euro)' => 'eur',
                     '💷 GBP (Libra esterlina)' => 'gbp',
                     '🇨🇦 CAD (Dólar canadiense)' => 'cad',
@@ -435,7 +435,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $interval = $this->option('interval');
             $isRecurring = false;
 
-            if ($interval) {
+            if ($interval && $interval !== 'none') {
                 $isRecurring = true;
             } elseif (! $this->option('amount')) {
                 $productType = $this->choice(
@@ -465,22 +465,22 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                 $currency = $this->choice(
                     'Moneda',
                     [
-                        'usd' => '💵 USD (Dólar estadounidense)',
                         'mxn' => '🇲🇽 MXN (Peso mexicano)',
+                        'usd' => '💵 USD (Dólar estadounidense)',
                         'eur' => '💶 EUR (Euro)',
                         'gbp' => '💷 GBP (Libra esterlina)',
                         'cad' => '🇨🇦 CAD (Dólar canadiense)',
                         'other' => '🌍 Otra moneda',
                     ],
-                    'usd'
+                    'mxn'
                 );
 
                 if ($currency === '🌍 Otra moneda' || $currency === 'other') {
                     $currency = $this->ask('Código de moneda (ej: jpy, brl, ars)', 'usd');
                 } else {
                     $currencyMap = [
-                        '💵 USD (Dólar estadounidense)' => 'usd',
                         '🇲🇽 MXN (Peso mexicano)' => 'mxn',
+                        '💵 USD (Dólar estadounidense)' => 'usd',
                         '💶 EUR (Euro)' => 'eur',
                         '💷 GBP (Libra esterlina)' => 'gbp',
                         '🇨🇦 CAD (Dólar canadiense)' => 'cad',

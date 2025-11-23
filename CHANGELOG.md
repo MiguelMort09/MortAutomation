@@ -51,6 +51,13 @@ Esta versión implementa la integración completa con el SDK de Stripe, permitie
 - Ejemplos de uso para cada comando
 - Instrucciones de configuración actualizadas
 
+# Release 1.3.2
+
+## ✨ Features
+- **Default Currency**: Changed default currency from USD to MXN (Peso mexicano) for better localization.
+- **Default Interval**: Changed default interval from 'month' to 'none' to indicate one-time payments by default.
+- **Interval Handling**: Added support for `--interval=none` to explicitly create one-time payments via CLI.
+
 # Release 1.3.1
 
 ## 🐛 Fixes
