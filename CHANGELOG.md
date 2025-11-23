@@ -5,6 +5,51 @@ Todos los cambios notables de este proyecto serán documentados en este archivo.
 El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/),
 y este proyecto adhiere a [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-11-22
+
+### 🎉 Integración Real con Stripe SDK
+
+Esta versión implementa la integración completa con el SDK de Stripe, permitiendo la sincronización automática de recursos creados desde la consola hacia la cuenta de Stripe.
+
+### ✨ Agregado
+- **StripeService**: Nuevo servicio centralizado para todas las operaciones de Stripe
+  - Inicialización automática del cliente de Stripe
+  - Métodos para crear clientes, productos, precios y payment links
+  - Métodos para listar recursos existentes
+  - Verificación de conexión con Stripe
+  - Manejo robusto de errores de la API de Stripe
+
+### 🚀 Mejorado
+- **StripeMCPAutomationCommand**: Actualizado con integración real
+  - ✅ Sincronización automática con Stripe al crear recursos
+  - ✅ Instrucciones claras y específicas para cada acción
+  - ✅ Validación de datos requeridos antes de crear recursos
+  - ✅ Enlaces directos al Dashboard de Stripe para verificar recursos
+  - ✅ Sugerencias contextuales de próximos pasos
+  - ✅ Manejo específico de errores de Stripe API
+
+### 📦 Comandos Mejorados
+- `mort:stripe create-customer` - Ahora crea clientes reales en Stripe
+- `mort:stripe create-product` - Crea productos reales en Stripe
+- `mort:stripe create-price` - Crea precios (únicos o recurrentes) en Stripe
+- `mort:stripe create-payment-link` - Genera enlaces de pago reales
+- `mort:stripe list-customers` - Lista clientes reales de Stripe
+- `mort:stripe list-products` - Lista productos reales de Stripe
+- `mort:stripe list-prices` - Lista precios reales de Stripe
+
+### 🔧 Configuración
+- Service Provider actualizado para registrar StripeService como singleton
+- Soporte completo para credenciales en `.env` (STRIPE_KEY, STRIPE_SECRET)
+
+### ✅ Verificado
+- Tests pasando: 4/4 exitosos
+- Estilo de código verificado y corregido con Laravel Pint
+- Integración funcional con Stripe API v16.0
+
+### 📚 Documentación
+- Walkthrough completo de la implementación
+- Ejemplos de uso para cada comando
+- Instrucciones de configuración actualizadas
 
 
 ## [1.4.0] - 2025-01-27
