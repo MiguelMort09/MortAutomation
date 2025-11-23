@@ -51,6 +51,11 @@ Esta versión implementa la integración completa con el SDK de Stripe, permitie
 - Ejemplos de uso para cada comando
 - Instrucciones de configuración actualizadas
 
+# Release 1.2.6
+
+## 🐛 Fixes
+- **Interactive Menu**: Fixed infinite loop in `mort:stripe` when selecting options from the menu. Now calls methods directly for better reliability.
+
 ## [1.2.5] - 2025-01-27
 
 ### 🐛 Fixes

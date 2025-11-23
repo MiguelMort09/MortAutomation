@@ -98,16 +98,31 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             'help'
         );
 
-        if ($choice === 'exit') {
+        // Si el usuario selecciona "Salir"
+        if ($choice === '🚪 Salir' || $choice === 'exit') {
             return 0;
         }
 
-        // Mapear la opción seleccionada a la acción correspondiente
-        // array_search devuelve la clave (ej: 'create-customer') dado el valor (ej: '👤 Crear Cliente')
+        // Intentar encontrar la acción basada en la descripción (valor)
         $action = array_search($choice, $options);
 
-        // Llamar al comando con la acción seleccionada
-        return $this->call('mort:stripe', ['action' => $action]);
+        // Si no se encuentra (quizás el usuario escribió la clave directamente), usar el input tal cual
+        if ($action === false) {
+            $action = $choice;
+        }
+
+        return match ($action) {
+            'setup' => $this->setupStripe(),
+            'create-customer' => $this->createCustomer(),
+            'create-product' => $this->createProduct(),
+            'create-price' => $this->createPrice(),
+            'create-payment-link' => $this->createPaymentLink(),
+            'list-customers' => $this->listCustomers(),
+            'list-products' => $this->listProducts(),
+            'list-prices' => $this->listPrices(),
+            'help' => $this->showHelp(),
+            default => $this->showInvalidAction()
+        };
     }
 
     public function executeAutomation(): int
