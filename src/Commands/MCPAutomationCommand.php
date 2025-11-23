@@ -33,6 +33,21 @@ class MCPAutomationCommand extends Command implements AutomationInterface
         };
     }
 
+    public function executeAutomation(): int
+    {
+        return $this->handle();
+    }
+
+    public function isAvailable(): bool
+    {
+        return true; // Siempre disponible
+    }
+
+    public function getDescription(): string
+    {
+        return 'Verificar estado y documentación de MCPs disponibles';
+    }
+
     private function showInteractiveMenu(): int
     {
         $this->info('🤖 Mort MCP Status & Docs');
