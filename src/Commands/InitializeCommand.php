@@ -144,9 +144,10 @@ class InitializeCommand extends Command
                 return class_exists('Mort\Automation\AutomationServiceProvider');
             },
             'Comandos disponibles' => function () {
-                $output = shell_exec('php artisan list | grep mort:');
+                \Illuminate\Support\Facades\Artisan::call('list');
+                $output = \Illuminate\Support\Facades\Artisan::output();
 
-                return ! empty($output);
+                return str_contains($output, 'mort:');
             },
             'Configuración' => function () {
                 return file_exists(config_path('automation.php'));
