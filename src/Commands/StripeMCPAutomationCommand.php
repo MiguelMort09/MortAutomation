@@ -4,6 +4,7 @@ namespace Mort\Automation\Commands;
 
 use Illuminate\Console\Command;
 use Mort\Automation\Contracts\AutomationInterface;
+use Mort\Automation\Services\StripeService;
 use Mort\Automation\Traits\ExecutesCommands;
 
 class StripeMCPAutomationCommand extends Command implements AutomationInterface
@@ -13,6 +14,11 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     protected $signature = 'mort:stripe {action} {--customer=} {--product=} {--price=} {--amount=} {--currency=usd} {--force}';
 
     protected $description = 'Automatizar operaciones de Stripe usando MCP siguiendo la guía de Mort';
+
+    public function __construct(private StripeService $stripeService)
+    {
+        parent::__construct();
+    }
 
     public function handle(): int
     {
@@ -52,30 +58,58 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function createCustomer(): int
     {
         $this->info('👤 Creando cliente en Stripe...');
+        $this->newLine();
 
         try {
-            $name = $this->ask('Nombre del cliente');
-            $email = $this->ask('Email del cliente');
-
-            if (! $name) {
-                $this->error('❌ Se requiere un nombre');
+            // Verificar configuración
+            if (! $this->stripeService->isConfigured()) {
+                $this->error('❌ Stripe no está configurado');
+                $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
 
                 return 1;
             }
 
-            // Aquí iría la integración real con el MCP de Stripe
-            $this->info("✅ Cliente creado: {$name}");
-            if ($email) {
-                $this->info("📧 Email: {$email}");
+            // Solicitar datos del cliente
+            $this->info('📝 Ingresa los datos del cliente:');
+            $name = $this->ask('Nombre del cliente');
+            $email = $this->ask('Email del cliente (opcional)');
+            $description = $this->ask('Descripción (opcional)');
+
+            if (! $name) {
+                $this->error('❌ El nombre es requerido');
+
+                return 1;
             }
 
-            $this->line('');
+            // Crear cliente en Stripe (sincronización automática)
+            $this->info('🔄 Sincronizando con Stripe...');
+            $customer = $this->stripeService->createCustomer([
+                'name' => $name,
+                'email' => $email,
+                'description' => $description,
+            ]);
+
+            // Mostrar resultados
+            $this->newLine();
+            $this->info('✅ Cliente creado exitosamente en Stripe');
+            $this->line("  🆔 ID: {$customer['id']}");
+            $this->line("  👤 Nombre: {$customer['name']}");
+            if ($customer['email']) {
+                $this->line("  📧 Email: {$customer['email']}");
+            }
+            $this->line('  📅 Fecha: '.date('Y-m-d H:i:s', $customer['created']));
+
+            $this->newLine();
             $this->info('💡 Próximos pasos:');
-            $this->line('  - Crear productos para el cliente');
-            $this->line('  - Configurar precios');
-            $this->line('  - Crear payment links');
+            $this->line('  • Ver cliente en Dashboard: https://dashboard.stripe.com/customers/'.$customer['id']);
+            $this->line('  • Crear productos: php artisan mort:stripe create-product');
+            $this->line('  • Listar clientes: php artisan mort:stripe list-customers');
 
             return 0;
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->error('❌ Error de Stripe API: '.$e->getMessage());
+
+            return 1;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
 
@@ -86,29 +120,56 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function createProduct(): int
     {
         $this->info('📦 Creando producto en Stripe...');
+        $this->newLine();
 
         try {
-            $name = $this->ask('Nombre del producto');
-            $description = $this->ask('Descripción del producto (opcional)');
-
-            if (! $name) {
-                $this->error('❌ Se requiere un nombre');
+            // Verificar configuración
+            if (! $this->stripeService->isConfigured()) {
+                $this->error('❌ Stripe no está configurado');
+                $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
 
                 return 1;
             }
 
-            // Aquí iría la integración real con el MCP de Stripe
-            $this->info("✅ Producto creado: {$name}");
-            if ($description) {
-                $this->info("📝 Descripción: {$description}");
+            // Solicitar datos del producto
+            $this->info('📝 Ingresa los datos del producto:');
+            $name = $this->ask('Nombre del producto');
+            $description = $this->ask('Descripción del producto (opcional)');
+
+            if (! $name) {
+                $this->error('❌ El nombre es requerido');
+
+                return 1;
             }
 
-            $this->line('');
+            // Crear producto en Stripe (sincronización automática)
+            $this->info('🔄 Sincronizando con Stripe...');
+            $product = $this->stripeService->createProduct([
+                'name' => $name,
+                'description' => $description,
+            ]);
+
+            // Mostrar resultados
+            $this->newLine();
+            $this->info('✅ Producto creado exitosamente en Stripe');
+            $this->line("  🆔 ID: {$product['id']}");
+            $this->line("  📦 Nombre: {$product['name']}");
+            if ($product['description']) {
+                $this->line("  📝 Descripción: {$product['description']}");
+            }
+            $this->line('  📅 Fecha: '.date('Y-m-d H:i:s', $product['created']));
+
+            $this->newLine();
             $this->info('💡 Próximos pasos:');
-            $this->line('  - Crear precios para el producto');
-            $this->line('  - Configurar payment links');
+            $this->line('  • Ver producto en Dashboard: https://dashboard.stripe.com/products/'.$product['id']);
+            $this->line('  • Crear precio: php artisan mort:stripe create-price --product='.$product['id']);
+            $this->line('  • Listar productos: php artisan mort:stripe list-products');
 
             return 0;
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->error('❌ Error de Stripe API: '.$e->getMessage());
+
+            return 1;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
 
@@ -119,28 +180,66 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function createPrice(): int
     {
         $this->info('💰 Creando precio en Stripe...');
+        $this->newLine();
 
         try {
-            $product = $this->option('product') ?? $this->ask('ID del producto');
-            $amount = $this->option('amount') ?? $this->ask('Monto (en centavos)');
-            $currency = $this->option('currency') ?? $this->ask('Moneda (ej: usd, eur)', 'usd');
-
-            if (! $product || ! $amount) {
-                $this->error('❌ Se requiere producto y monto');
+            // Verificar configuración
+            if (! $this->stripeService->isConfigured()) {
+                $this->error('❌ Stripe no está configurado');
+                $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
 
                 return 1;
             }
 
-            // Aquí iría la integración real con el MCP de Stripe
-            $this->info("✅ Precio creado para producto: {$product}");
-            $this->info("💰 Monto: {$amount} {$currency}");
+            // Solicitar datos del precio
+            $this->info('📝 Ingresa los datos del precio:');
+            $product = $this->option('product') ?? $this->ask('ID del producto');
+            $amount = $this->option('amount') ?? $this->ask('Monto (en centavos, ej: 2999 = $29.99)');
+            $currency = $this->option('currency') ?? $this->ask('Moneda (ej: usd, eur)', 'usd');
+            $isRecurring = $this->confirm('¿Es un precio recurrente (suscripción)?', false);
 
-            $this->line('');
+            if (! $product || ! $amount) {
+                $this->error('❌ Producto y monto son requeridos');
+
+                return 1;
+            }
+
+            $priceData = [
+                'product' => $product,
+                'amount' => $amount,
+                'currency' => $currency,
+            ];
+
+            if ($isRecurring) {
+                $interval = $this->choice('Intervalo de recurrencia', ['day', 'week', 'month', 'year'], 'month');
+                $priceData['recurring'] = ['interval' => $interval];
+            }
+
+            // Crear precio en Stripe (sincronización automática)
+            $this->info('🔄 Sincronizando con Stripe...');
+            $price = $this->stripeService->createPrice($priceData);
+
+            // Mostrar resultados
+            $this->newLine();
+            $this->info('✅ Precio creado exitosamente en Stripe');
+            $this->line("  🆔 ID: {$price['id']}");
+            $this->line("  📦 Producto: {$price['product']}");
+            $this->line("  💰 Monto: {$price['amount']} {$price['currency']}");
+            if ($price['recurring']) {
+                $this->line("  🔄 Recurrencia: {$price['recurring']['interval']}");
+            }
+
+            $this->newLine();
             $this->info('💡 Próximos pasos:');
-            $this->line('  - Crear payment links');
-            $this->line('  - Configurar suscripciones');
+            $this->line('  • Ver precio en Dashboard: https://dashboard.stripe.com/prices/'.$price['id']);
+            $this->line('  • Crear payment link: php artisan mort:stripe create-payment-link --price='.$price['id']);
+            $this->line('  • Listar precios: php artisan mort:stripe list-prices');
 
             return 0;
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->error('❌ Error de Stripe API: '.$e->getMessage());
+
+            return 1;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
 
@@ -151,32 +250,63 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function createPaymentLink(): int
     {
         $this->info('🔗 Creando payment link en Stripe...');
+        $this->newLine();
 
         try {
-            $price = $this->option('price') ?? $this->ask('ID del precio');
-            $quantity = $this->ask('Cantidad', '1');
-            $redirectUrl = $this->ask('URL de redirección (opcional)');
-
-            if (! $price) {
-                $this->error('❌ Se requiere un precio');
+            // Verificar configuración
+            if (! $this->stripeService->isConfigured()) {
+                $this->error('❌ Stripe no está configurado');
+                $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
 
                 return 1;
             }
 
-            // Aquí iría la integración real con el MCP de Stripe
-            $this->info("✅ Payment link creado para precio: {$price}");
-            $this->info("📊 Cantidad: {$quantity}");
+            // Solicitar datos del payment link
+            $this->info('📝 Ingresa los datos del payment link:');
+            $price = $this->option('price') ?? $this->ask('ID del precio');
+            $quantity = $this->ask('Cantidad', '1');
+            $redirectUrl = $this->ask('URL de redirección después del pago (opcional)');
 
-            if ($redirectUrl) {
-                $this->info("🔗 Redirección: {$redirectUrl}");
+            if (! $price) {
+                $this->error('❌ El ID del precio es requerido');
+
+                return 1;
             }
 
-            $this->line('');
+            $linkData = [
+                'price' => $price,
+                'quantity' => $quantity,
+            ];
+
+            if ($redirectUrl) {
+                $linkData['after_completion'] = [
+                    'type' => 'redirect',
+                    'redirect' => ['url' => $redirectUrl],
+                ];
+            }
+
+            // Crear payment link en Stripe (sincronización automática)
+            $this->info('🔄 Sincronizando con Stripe...');
+            $paymentLink = $this->stripeService->createPaymentLink($linkData);
+
+            // Mostrar resultados
+            $this->newLine();
+            $this->info('✅ Payment link creado exitosamente en Stripe');
+            $this->line("  🆔 ID: {$paymentLink['id']}");
+            $this->line("  🔗 URL: {$paymentLink['url']}");
+            $this->line('  ✅ Activo: '.($paymentLink['active'] ? 'Sí' : 'No'));
+
+            $this->newLine();
             $this->info('💡 Próximos pasos:');
-            $this->line('  - Compartir el payment link');
-            $this->line('  - Monitorear pagos');
+            $this->line('  • Copiar el link: '.$paymentLink['url']);
+            $this->line('  • Compartir con clientes');
+            $this->line('  • Monitorear pagos en: https://dashboard.stripe.com/payment-links');
 
             return 0;
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->error('❌ Error de Stripe API: '.$e->getMessage());
+
+            return 1;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
 
@@ -256,21 +386,55 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function listCustomers(): int
     {
         $this->info('👥 Listando clientes de Stripe...');
+        $this->newLine();
 
         try {
+            // Verificar configuración
+            if (! $this->stripeService->isConfigured()) {
+                $this->error('❌ Stripe no está configurado');
+                $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
+
+                return 1;
+            }
+
             $limit = $this->ask('Límite de resultados', '10');
             $email = $this->ask('Filtrar por email (opcional)');
 
-            // Aquí iría la consulta real a Stripe
-            $this->line('');
-            $this->info('👥 Clientes encontrados:');
-            $this->line('  - Juan Pérez (juan@example.com)');
-            $this->line('  - María García (maria@example.com)');
-            $this->line('  - Carlos López (carlos@example.com)');
+            $params = ['limit' => (int) $limit];
+            if ($email) {
+                $params['email'] = $email;
+            }
 
-            $this->info('✅ Lista de clientes obtenida');
+            // Obtener clientes de Stripe
+            $this->info('🔄 Consultando Stripe...');
+            $customers = $this->stripeService->listCustomers($params);
+
+            $this->newLine();
+            if (empty($customers)) {
+                $this->warn('⚠️  No se encontraron clientes');
+
+                return 0;
+            }
+
+            $this->info('👥 Clientes encontrados ('.count($customers).'):');
+            $this->newLine();
+            foreach ($customers as $customer) {
+                $this->line('  🆔 '.$customer['id']);
+                $this->line('    👤 '.$customer['name']);
+                if ($customer['email']) {
+                    $this->line('    📧 '.$customer['email']);
+                }
+                $this->line('    📅 '.date('Y-m-d', $customer['created']));
+                $this->newLine();
+            }
+
+            $this->info('✅ Lista obtenida exitosamente');
 
             return 0;
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->error('❌ Error de Stripe API: '.$e->getMessage());
+
+            return 1;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
 
@@ -281,20 +445,49 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function listProducts(): int
     {
         $this->info('📦 Listando productos de Stripe...');
+        $this->newLine();
 
         try {
+            // Verificar configuración
+            if (! $this->stripeService->isConfigured()) {
+                $this->error('❌ Stripe no está configurado');
+                $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
+
+                return 1;
+            }
+
             $limit = $this->ask('Límite de resultados', '10');
 
-            // Aquí iría la consulta real a Stripe
-            $this->line('');
-            $this->info('📦 Productos encontrados:');
-            $this->line('  - Membresía Básica');
-            $this->line('  - Membresía Premium');
-            $this->line('  - Membresía VIP');
+            // Obtener productos de Stripe
+            $this->info('🔄 Consultando Stripe...');
+            $products = $this->stripeService->listProducts(['limit' => (int) $limit]);
 
-            $this->info('✅ Lista de productos obtenida');
+            $this->newLine();
+            if (empty($products)) {
+                $this->warn('⚠️  No se encontraron productos');
+
+                return 0;
+            }
+
+            $this->info('📦 Productos encontrados ('.count($products).'):');
+            $this->newLine();
+            foreach ($products as $product) {
+                $this->line('  🆔 '.$product['id']);
+                $this->line('    📦 '.$product['name']);
+                if ($product['description']) {
+                    $this->line('    📝 '.$product['description']);
+                }
+                $this->line('    📅 '.date('Y-m-d', $product['created']));
+                $this->newLine();
+            }
+
+            $this->info('✅ Lista obtenida exitosamente');
 
             return 0;
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->error('❌ Error de Stripe API: '.$e->getMessage());
+
+            return 1;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
 
@@ -305,21 +498,56 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function listPrices(): int
     {
         $this->info('💰 Listando precios de Stripe...');
+        $this->newLine();
 
         try {
+            // Verificar configuración
+            if (! $this->stripeService->isConfigured()) {
+                $this->error('❌ Stripe no está configurado');
+                $this->warn('💡 Ejecuta: php artisan mort:stripe setup');
+
+                return 1;
+            }
+
             $product = $this->ask('ID del producto (opcional)');
             $limit = $this->ask('Límite de resultados', '10');
 
-            // Aquí iría la consulta real a Stripe
-            $this->line('');
-            $this->info('💰 Precios encontrados:');
-            $this->line('  - Membresía Básica: $29.99/mes');
-            $this->line('  - Membresía Premium: $49.99/mes');
-            $this->line('  - Membresía VIP: $99.99/mes');
+            $params = ['limit' => (int) $limit];
+            if ($product) {
+                $params['product'] = $product;
+            }
 
-            $this->info('✅ Lista de precios obtenida');
+            // Obtener precios de Stripe
+            $this->info('🔄 Consultando Stripe...');
+            $prices = $this->stripeService->listPrices($params);
+
+            $this->newLine();
+            if (empty($prices)) {
+                $this->warn('⚠️  No se encontraron precios');
+
+                return 0;
+            }
+
+            $this->info('💰 Precios encontrados ('.count($prices).'):');
+            $this->newLine();
+            foreach ($prices as $price) {
+                $this->line('  🆔 '.$price['id']);
+                $this->line('    📦 Producto: '.$price['product']);
+                $amount = $price['amount'] / 100;
+                $this->line('    💰 Monto: $'.number_format($amount, 2).' '.$price['currency']);
+                if ($price['recurring']) {
+                    $this->line('    🔄 Recurrencia: '.$price['recurring']['interval']);
+                }
+                $this->newLine();
+            }
+
+            $this->info('✅ Lista obtenida exitosamente');
 
             return 0;
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->error('❌ Error de Stripe API: '.$e->getMessage());
+
+            return 1;
         } catch (\Exception $e) {
             $this->error("❌ Error: {$e->getMessage()}");
 
@@ -441,10 +669,15 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
     private function testStripeConnection(): void
     {
         try {
-            // Simular test de conexión
             $this->line('  🔄 Probando conexión...');
-            sleep(1); // Simular delay
-            $this->line('  ✅ Conexión exitosa');
+
+            if ($this->stripeService->testConnection()) {
+                $this->line('  ✅ Conexión exitosa con Stripe');
+            } else {
+                $this->line('  ❌ No se pudo conectar con Stripe');
+            }
+        } catch (\Stripe\Exception\ApiErrorException $e) {
+            $this->line('  ❌ Error de API: '.$e->getMessage());
         } catch (\Exception $e) {
             $this->line('  ❌ Error de conexión: '.$e->getMessage());
         }

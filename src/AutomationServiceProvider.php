@@ -23,6 +23,11 @@ class AutomationServiceProvider extends ServiceProvider
             __DIR__.'/Config/automation.php',
             'mort-automation'
         );
+
+        // Registrar StripeService como singleton
+        $this->app->singleton(\Mort\Automation\Services\StripeService::class, function ($app) {
+            return new \Mort\Automation\Services\StripeService;
+        });
     }
 
     /**
