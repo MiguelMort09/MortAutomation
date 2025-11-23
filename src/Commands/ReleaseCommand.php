@@ -10,7 +10,7 @@ class ReleaseCommand extends Command implements AutomationInterface
 {
     use ExecutesCommands;
 
-    protected $signature = 'mort:release {type? : Tipo de incremento (patch, minor, major)}';
+    protected $signature = 'mort:release {type? : Tipo de incremento (patch, minor, major)} {--force : Forzar ejecución sin confirmación}';
 
     protected $description = 'Automatizar el proceso de release (changelog, tag, push)';
 
@@ -32,7 +32,7 @@ class ReleaseCommand extends Command implements AutomationInterface
         $newVersion = $this->calculateNewVersion($currentVersion, $type);
         $this->info("✨ Nueva versión será: {$newVersion}");
 
-        if (! $this->confirm('¿Continuar con este release?')) {
+        if (! $this->option('force') && ! $this->confirm('¿Continuar con este release?')) {
             $this->info('Operación cancelada.');
 
             return self::SUCCESS;
@@ -52,7 +52,7 @@ class ReleaseCommand extends Command implements AutomationInterface
             $this->executeCommand("git tag -a {$newVersion} -m \"Release {$newVersion}\"");
 
             // 7. Push
-            if ($this->confirm('¿Hacer push al repositorio remoto?')) {
+            if ($this->option('force') || $this->confirm('¿Hacer push al repositorio remoto?')) {
                 $this->info('⬆️  Subiendo cambios...');
                 $this->executeCommand('git push origin master --tags'); // Asumiendo master, idealmente detectar rama
             }
