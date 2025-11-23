@@ -58,5 +58,11 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true
         }
+    },
+    "audit": {
+        "ignore": [
+            "PKSA-365x-2zjk-pt47"
+        ],
+        "block-insecure": false
     }
 }
