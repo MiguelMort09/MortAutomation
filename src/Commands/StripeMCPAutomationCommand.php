@@ -11,18 +11,54 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 {
     use ExecutesCommands;
 
-    protected $signature = 'mort:stripe {action} {--customer=} {--product=} {--price=} {--amount=} {--currency=usd} {--force}';
+    protected $signature = 'mort:stripe {action?} 
+                            {--customer=} 
+                            {--product=} 
+                            {--price=} 
+                            {--amount=} 
+                            {--currency=usd} 
+                            {--name=} 
+                            {--description=} 
+                            {--email=} 
+                            {--quantity=1} 
+                            {--redirect-url=} 
+                            {--interval=month} 
+                            {--force}';
 
-    protected $description = 'Automatizar operaciones de Stripe usando MCP siguiendo la guía de Mort';
+    protected $description = 'Automatizar operaciones de Stripe. Acciones: setup, create-customer, create-product, create-price, create-payment-link, list-customers, list-products, list-prices';
 
     public function __construct(private StripeService $stripeService)
     {
         parent::__construct();
     }
 
+    /**
+     * Helper to get an option value or ask the user if not provided.
+     */
+    private function getOptionOrAsk(string $option, string $question, ?string $default = null): ?string
+    {
+        $value = $this->option($option);
+        
+        if ($value) {
+            return $value;
+        }
+
+        // If running in non-interactive mode (e.g. from LLM) and option is missing, 
+        // we might want to return default or null instead of blocking.
+        // However, 'ask' will still block if input is expected.
+        // For now, we assume if an LLM calls this, it should provide args.
+        // If it didn't, we fall back to interactive ask.
+        
+        return $this->ask($question, $default);
+    }
+
     public function handle(): int
     {
         $action = $this->argument('action');
+
+        if (! $action) {
+            return $this->showInteractiveMenu();
+        }
 
         return match ($action) {
             'setup' => $this->setupStripe(),
@@ -30,14 +66,48 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             'create-product' => $this->createProduct(),
             'create-price' => $this->createPrice(),
             'create-payment-link' => $this->createPaymentLink(),
-            'sync-data' => $this->syncData(),
-            'generate-report' => $this->generateReport(),
             'list-customers' => $this->listCustomers(),
             'list-products' => $this->listProducts(),
             'list-prices' => $this->listPrices(),
             'help' => $this->showHelp(),
             default => $this->showInvalidAction()
         };
+    }
+
+    private function showInteractiveMenu(): int
+    {
+        $this->info('🤖 Mort Stripe Automation');
+        $this->newLine();
+
+        $options = [
+            'setup' => '⚙️  Configurar Stripe',
+            'create-customer' => '👤 Crear Cliente',
+            'create-product' => '📦 Crear Producto',
+            'create-price' => '💰 Crear Precio',
+            'create-payment-link' => '🔗 Crear Payment Link',
+            'list-customers' => '👥 Listar Clientes',
+            'list-products' => '📦 Listar Productos',
+            'list-prices' => '💰 Listar Precios',
+            'help' => '❓ Ayuda',
+            'exit' => '🚪 Salir',
+        ];
+
+        $choice = $this->choice(
+            '¿Qué deseas hacer?',
+            $options,
+            'help'
+        );
+
+        if ($choice === 'exit') {
+            return 0;
+        }
+
+        // Mapear la opción seleccionada a la acción correspondiente
+        // array_search devuelve la clave (ej: 'create-customer') dado el valor (ej: '👤 Crear Cliente')
+        $action = array_search($choice, $options);
+
+        // Llamar al comando con la acción seleccionada
+        return $this->call('mort:stripe', ['action' => $action]);
     }
 
     public function executeAutomation(): int
@@ -71,9 +141,10 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del cliente
             $this->info('📝 Ingresa los datos del cliente:');
-            $name = $this->ask('Nombre del cliente');
-            $email = $this->ask('Email del cliente (opcional)');
-            $description = $this->ask('Descripción (opcional)');
+            
+            $name = $this->getOptionOrAsk('name', 'Nombre del cliente');
+            $email = $this->getOptionOrAsk('email', 'Email del cliente (opcional)');
+            $description = $this->getOptionOrAsk('description', 'Descripción (opcional)');
 
             if (! $name) {
                 $this->error('❌ El nombre es requerido');
@@ -133,8 +204,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del producto
             $this->info('📝 Ingresa los datos del producto:');
-            $name = $this->ask('Nombre del producto');
-            $description = $this->ask('Descripción del producto (opcional)');
+            
+            $name = $this->getOptionOrAsk('name', 'Nombre del producto');
+            $description = $this->getOptionOrAsk('description', 'Descripción del producto (opcional)');
 
             if (! $name) {
                 $this->error('❌ El nombre es requerido');
@@ -149,7 +221,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                 'description' => $description,
             ]);
 
-            // Mostrar resultados
+            // Mostrar resultados del producto
             $this->newLine();
             $this->info('✅ Producto creado exitosamente en Stripe');
             $this->line("  🆔 ID: {$product['id']}");
@@ -159,11 +231,23 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             }
             $this->line('  📅 Fecha: '.date('Y-m-d H:i:s', $product['created']));
 
-            $this->newLine();
-            $this->info('💡 Próximos pasos:');
-            $this->line('  • Ver producto en Dashboard: https://dashboard.stripe.com/products/'.$product['id']);
-            $this->line('  • Crear precio: php artisan mort:stripe create-price --product='.$product['id']);
-            $this->line('  • Listar productos: php artisan mort:stripe list-products');
+            // Si se proporcionó un monto, crear el precio automáticamente
+            if ($this->option('amount')) {
+                $this->createPriceForProduct($product['id']);
+            } 
+            // Si no hay monto y no estamos en modo interactivo forzado (por ejemplo, si se pasó el nombre por argumento),
+            // asumimos que es una operación atómica de solo crear producto, a menos que el usuario esté en consola interactiva.
+            // Pero para mantener la UX anterior, preguntamos si no se pasó el nombre (asumiendo flujo interactivo).
+            elseif (! $this->option('name')) {
+                $this->newLine();
+                if ($this->confirm('¿Deseas agregar un precio a este producto ahora?', true)) {
+                    $this->createPriceForProduct($product['id']);
+                } else {
+                    $this->showProductNextSteps($product['id']);
+                }
+            } else {
+                $this->showProductNextSteps($product['id']);
+            }
 
             return 0;
         } catch (\Stripe\Exception\ApiErrorException $e) {
@@ -174,6 +258,70 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->error("❌ Error: {$e->getMessage()}");
 
             return 1;
+        }
+    }
+
+    private function showProductNextSteps(string $productId): void
+    {
+        $this->newLine();
+        $this->info('💡 Próximos pasos:');
+        $this->line('  • Ver producto en Dashboard: https://dashboard.stripe.com/products/'.$productId);
+        $this->line('  • Crear precio más tarde: php artisan mort:stripe create-price --product='.$productId);
+        $this->line('  • Listar productos: php artisan mort:stripe list-products');
+    }
+
+    private function createPriceForProduct(string $productId): void
+    {
+        $this->info('💰 Creando precio para el producto...');
+        
+        $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
+        $currency = $this->getOptionOrAsk('currency', 'Moneda (ej: usd, eur, mxn)', 'usd');
+        
+        // Para intervalo, si viene por opción lo usamos, si no preguntamos
+        $interval = $this->option('interval');
+        $isRecurring = false;
+
+        if ($interval) {
+            $isRecurring = true;
+        } elseif (! $this->option('amount')) { 
+            // Solo preguntamos si estamos en flujo interactivo (no se pasó amount por cli)
+            $isRecurring = $this->confirm('¿Es un precio recurrente (suscripción)?', false);
+        }
+
+        if (! $amount) {
+            $this->error('❌ El monto es requerido');
+            return;
+        }
+
+        $priceData = [
+            'product' => $productId,
+            'amount' => $amount,
+            'currency' => $currency,
+        ];
+
+        if ($isRecurring) {
+            if (! $interval) {
+                $interval = $this->choice('Intervalo de recurrencia', ['day', 'week', 'month', 'year'], 'month');
+            }
+            $priceData['recurring'] = ['interval' => $interval];
+        }
+
+        try {
+            $price = $this->stripeService->createPrice($priceData);
+
+            $this->newLine();
+            $this->info('✅ Precio creado exitosamente');
+            $this->line("  🆔 ID: {$price['id']}");
+            $this->line("  💰 Monto: {$price['amount']} {$price['currency']}");
+            if ($price['recurring']) {
+                $this->line("  🔄 Recurrencia: {$price['recurring']['interval']}");
+            }
+
+            $this->newLine();
+            $this->info('💡 Próximos pasos:');
+            $this->line('  • Crear payment link: php artisan mort:stripe create-payment-link --price='.$price['id']);
+        } catch (\Exception $e) {
+            $this->error("❌ Error al crear precio: {$e->getMessage()}");
         }
     }
 
@@ -193,10 +341,19 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del precio
             $this->info('📝 Ingresa los datos del precio:');
-            $product = $this->option('product') ?? $this->ask('ID del producto');
-            $amount = $this->option('amount') ?? $this->ask('Monto (en centavos, ej: 2999 = $29.99)');
-            $currency = $this->option('currency') ?? $this->ask('Moneda (ej: usd, eur)', 'usd');
-            $isRecurring = $this->confirm('¿Es un precio recurrente (suscripción)?', false);
+            
+            $product = $this->getOptionOrAsk('product', 'ID del producto');
+            $amount = $this->getOptionOrAsk('amount', 'Monto (en centavos, ej: 2999 = $29.99)');
+            $currency = $this->getOptionOrAsk('currency', 'Moneda (ej: usd, eur)', 'usd');
+            
+            $interval = $this->option('interval');
+            $isRecurring = false;
+
+            if ($interval) {
+                $isRecurring = true;
+            } elseif (! $this->option('amount')) {
+                $isRecurring = $this->confirm('¿Es un precio recurrente (suscripción)?', false);
+            }
 
             if (! $product || ! $amount) {
                 $this->error('❌ Producto y monto son requeridos');
@@ -211,7 +368,9 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             ];
 
             if ($isRecurring) {
-                $interval = $this->choice('Intervalo de recurrencia', ['day', 'week', 'month', 'year'], 'month');
+                if (! $interval) {
+                    $interval = $this->choice('Intervalo de recurrencia', ['day', 'week', 'month', 'year'], 'month');
+                }
                 $priceData['recurring'] = ['interval' => $interval];
             }
 
@@ -263,9 +422,10 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
             // Solicitar datos del payment link
             $this->info('📝 Ingresa los datos del payment link:');
-            $price = $this->option('price') ?? $this->ask('ID del precio');
-            $quantity = $this->ask('Cantidad', '1');
-            $redirectUrl = $this->ask('URL de redirección después del pago (opcional)');
+            
+            $price = $this->getOptionOrAsk('price', 'ID del precio');
+            $quantity = $this->getOptionOrAsk('quantity', 'Cantidad', '1');
+            $redirectUrl = $this->getOptionOrAsk('redirect-url', 'URL de redirección después del pago (opcional)');
 
             if (! $price) {
                 $this->error('❌ El ID del precio es requerido');
@@ -645,6 +805,15 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
                 $this->setupWebhooks();
             }
 
+            // Publicar migraciones
+            $this->newLine();
+            $this->info('🗄️  Configurando base de datos local...');
+            if ($this->confirm('¿Deseas publicar y ejecutar las migraciones para guardar datos localmente?', true)) {
+                $this->call('vendor:publish', ['--tag' => 'mort-automation-migrations']);
+                $this->call('migrate');
+                $this->info('✅ Migraciones publicadas y ejecutadas');
+            }
+
             // Mostrar próximos pasos
             $this->newLine();
             $this->info('🎉 ¡Stripe configurado exitosamente!');
@@ -653,8 +822,7 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             $this->line('  1. Crear productos: php artisan mort:stripe create-product');
             $this->line('  2. Crear precios: php artisan mort:stripe create-price');
             $this->line('  3. Crear clientes: php artisan mort:stripe create-customer');
-            $this->line('  4. Sincronizar datos: php artisan mort:stripe sync-data');
-            $this->line('  5. Ver ayuda: php artisan mort:stripe help');
+            $this->line('  4. Ver ayuda: php artisan mort:stripe help');
             $this->newLine();
             $this->info('💡 Tip: Los precios se especifican en centavos (ej: 2999 = $29.99)');
 
@@ -705,8 +873,6 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
             'create-product' => 'Crear un nuevo producto en Stripe',
             'create-price' => 'Crear un nuevo precio para un producto',
             'create-payment-link' => 'Crear un enlace de pago',
-            'sync-data' => 'Sincronizar datos con Stripe',
-            'generate-report' => 'Generar reportes de Stripe',
             'list-customers' => 'Listar clientes de Stripe',
             'list-products' => 'Listar productos de Stripe',
             'list-prices' => 'Listar precios de Stripe',
@@ -719,10 +885,10 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
 
         $this->newLine();
         $this->info('📝 Ejemplos de uso:');
+        $this->line('  php artisan mort:stripe');
         $this->line('  php artisan mort:stripe setup');
         $this->line('  php artisan mort:stripe create-customer');
-        $this->line('  php artisan mort:stripe create-product');
-        $this->line('  php artisan mort:stripe sync-data --force');
+        $this->line('  php artisan mort:stripe list-products');
 
         return 0;
     }
@@ -733,8 +899,8 @@ class StripeMCPAutomationCommand extends Command implements AutomationInterface
         $this->newLine();
         $this->info('💡 Acciones disponibles:');
         $this->line('  setup, create-customer, create-product, create-price,');
-        $this->line('  create-payment-link, sync-data, generate-report,');
-        $this->line('  list-customers, list-products, list-prices, help');
+        $this->line('  create-payment-link, list-customers, list-products,');
+        $this->line('  list-prices, help');
         $this->newLine();
         $this->info('📚 Para ver ayuda detallada:');
         $this->line('  php artisan mort:stripe help');

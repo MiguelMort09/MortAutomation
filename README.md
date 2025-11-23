@@ -98,8 +98,12 @@ php artisan mort:mcp mcp-status
 ```
 
 ### 💳 Stripe
+> **Nota**: Ejecuta `php artisan mort:stripe` sin argumentos para ver el menú interactivo.
 
 ```bash
+# Menú Interactivo - Muestra todas las opciones disponibles
+php artisan mort:stripe
+
 # Crear cliente - Registra un nuevo cliente en Stripe con datos básicos
 php artisan mort:stripe create-customer
 
@@ -111,12 +115,6 @@ php artisan mort:stripe create-price --product="prod_xxx" --amount="2999"
 
 # Crear payment link - Genera enlace de pago para un precio específico
 php artisan mort:stripe create-payment-link --price="price_xxx"
-
-# Sincronizar datos - Sincroniza productos y precios entre BD local y Stripe
-php artisan mort:stripe sync-data
-
-# Generar reporte - Crea reporte de ventas, clientes y métricas de Stripe
-php artisan mort:stripe generate-report
 
 # Listar clientes - Muestra todos los clientes registrados en Stripe
 php artisan mort:stripe list-customers
@@ -246,6 +244,8 @@ Si tienes problemas o preguntas:
 ## 🎯 Roadmap
 
 - [ ] Integración completa con MCPs
+- [ ] Sincronización bidireccional de datos (sync-data)
+- [ ] Generación de reportes avanzados (generate-report)
 - [ ] Dashboard web para monitoreo
 - [ ] Integración con CI/CD
 - [ ] Soporte para múltiples bases de datos
